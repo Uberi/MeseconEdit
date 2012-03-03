@@ -114,16 +114,6 @@ While, GetKeyState("LButton","P")
 }
 Return
 
-Left::
-GetMouseCoordinates(Width,Height,MouseX,MouseY)
-Grid[MouseX,MouseY].ModifyState(1)
-Return
-
-Right::
-GetMouseCoordinates(Width,Height,MouseX,MouseY)
-Grid[MouseX,MouseY].ModifyState(-1)
-Return
-
 ~PGUP::
 ~WheelUp::
 If Viewport.W > 2
