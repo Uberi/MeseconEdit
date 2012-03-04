@@ -87,6 +87,11 @@ While, GetKeyState("RButton","P")
 }
 Return
 
+Space::
+GetMouseCoordinates(Width,Height,MouseX,MouseY)
+ToolTip % Grid[MouseX][MouseY].State
+Return
+
 DisplayClick:
 MouseX1 := ~0, MouseY1 := ~0
 While, GetKeyState("LButton","P")
@@ -99,9 +104,12 @@ While, GetKeyState("LButton","P")
             Grid[MouseX,MouseY] := new Mesecon(MouseX,MouseY)
         Else If ToolEmpty
         {
-            Grid[MouseX].Remove(MouseY,"")
-            If ObjMaxIndex(Grid[MouseX]) = ""
-                Grid.Remove(MouseX,"")
+            If ObjHasKey(Grid,MouseX) && ObjHasKey(Grid[MouseX],MouseY)
+            {
+                Grid[MouseX].Remove(MouseY,"")
+                If ObjMaxIndex(Grid[MouseX]) = ""
+                    Grid.Remove(MouseX,"")
+            }
         }
         Else If ToolPowerPlant
             Grid[MouseX,MouseY] := new PowerPlant(MouseX,MouseY)
