@@ -65,6 +65,7 @@ class Mesecon
 
     Recalculate(OpenList = "")
     {
+        global Grid
         If (OpenList = "")
             OpenList := []
         OpenList[this.IndexX,this.IndexY] := 1
@@ -89,6 +90,7 @@ class Mesecon
 
     PowerSourceConnected(OpenList = "")
     {
+        global Grid
         If (OpenList = "")
             OpenList := []
         OpenList[this.IndexX,this.IndexY] := 1
@@ -98,14 +100,16 @@ class Mesecon
         Top := Grid[this.IndexX,this.IndexY - 1]
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
+        Result := 0
         If Left.Conductive && !OpenList[Left.IndexX,Left.IndexY]
-            Left.ModifyState(Amount,OpenList)
+            Result += Left.PowerSourceConnected(OpenList)
         If Right.Conductive && !OpenList[Right.IndexX,Right.IndexY]
-            Right.ModifyState(Amount,OpenList)
+            Result += Right.PowerSourceConnected(OpenList)
         If Top.Conductive && !OpenList[Top.IndexX,Top.IndexY]
-            Top.ModifyState(Amount,OpenList)
+            Result += Top.PowerSourceConnected(OpenList)
         If Bottom.Conductive && !OpenList[Bottom.IndexX,Bottom.IndexY]
-            Bottom.ModifyState(Amount,OpenList)
+            Result += Bottom.PowerSourceConnected(OpenList)
+        Return, Result
     }
 
     ModifyState(Amount,OpenList = "")

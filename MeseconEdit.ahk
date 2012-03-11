@@ -91,7 +91,7 @@ While, GetKeyState("Space","P")
 {
     GetMouseCoordinates(Width,Height,MouseX,MouseY)
     Node := Grid[MouseX][MouseY]
-    ToolTip % "State: " . Node.State . "`nLeft State: " . Node.LeftState . "`nRight State: " . Node.RightState . "`nTop State: " . Node.TopState . "`nBottom State: " . Node.BottomState
+    ToolTip % "State: " . Node.State
     Sleep, 100
 }
 Return
