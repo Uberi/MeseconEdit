@@ -52,7 +52,7 @@ class Mesecon
 
     __Delete()
     {
-        ;wip: use directional states
+        this.Recalculate()
 
         this.base.Count --
         If this.base.Count = 0 ;last mesecon instance
@@ -61,6 +61,51 @@ class Mesecon
             DllCall("DeleteObject","UPtr",this.base.hOnBrush)
             DllCall("DeleteObject","UPtr",this.base.hOffBrush)
         }
+    }
+
+    Recalculate(OpenList = "")
+    {
+        If (OpenList = "")
+            OpenList := []
+        OpenList[this.IndexX,this.IndexY] := 1
+
+        Left := Grid[this.IndexX - 1,this.IndexY]
+        Right := Grid[this.IndexX + 1,this.IndexY]
+        Top := Grid[this.IndexX,this.IndexY - 1]
+        Bottom := Grid[this.IndexX,this.IndexY + 1]
+
+        this.State := this.PowerSourceConnected()
+
+        ;update neighbor nodes
+        If Left.Conductive && !OpenList[Left.IndexX,Left.IndexY]
+            Left.Recalculate(OpenList)
+        If Right.Conductive && !OpenList[Right.IndexX,Right.IndexY]
+            Right.Recalculate(OpenList)
+        If Top.Conductive && !OpenList[Top.IndexX,Top.IndexY]
+            Top.Recalculate(OpenList)
+        If Bottom.Conductive && !OpenList[Bottom.IndexX,Bottom.IndexY]
+            Bottom.Recalculate(OpenList)
+    }
+
+    PowerSourceConnected(OpenList = "")
+    {
+        If (OpenList = "")
+            OpenList := []
+        OpenList[this.IndexX,this.IndexY] := 1
+
+        Left := Grid[this.IndexX - 1,this.IndexY]
+        Right := Grid[this.IndexX + 1,this.IndexY]
+        Top := Grid[this.IndexX,this.IndexY - 1]
+        Bottom := Grid[this.IndexX,this.IndexY + 1]
+
+        If Left.Conductive && !OpenList[Left.IndexX,Left.IndexY]
+            Left.ModifyState(Amount,OpenList)
+        If Right.Conductive && !OpenList[Right.IndexX,Right.IndexY]
+            Right.ModifyState(Amount,OpenList)
+        If Top.Conductive && !OpenList[Top.IndexX,Top.IndexY]
+            Top.ModifyState(Amount,OpenList)
+        If Bottom.Conductive && !OpenList[Bottom.IndexX,Bottom.IndexY]
+            Bottom.ModifyState(Amount,OpenList)
     }
 
     ModifyState(Amount,OpenList = "")

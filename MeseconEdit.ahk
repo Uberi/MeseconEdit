@@ -19,7 +19,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-;wip: use a directional power source count - count the number of power sources for each side of each mesecon, so that removing one on one side simply decrements by that amount on the relevant side
 ;wip: file saving/loading and new nodes
 
 #Warn All
@@ -88,8 +87,13 @@ While, GetKeyState("RButton","P")
 Return
 
 Space::
-GetMouseCoordinates(Width,Height,MouseX,MouseY)
-ToolTip % Grid[MouseX][MouseY].State
+While, GetKeyState("Space","P")
+{
+    GetMouseCoordinates(Width,Height,MouseX,MouseY)
+    Node := Grid[MouseX][MouseY]
+    ToolTip % "State: " . Node.State . "`nLeft State: " . Node.LeftState . "`nRight State: " . Node.RightState . "`nTop State: " . Node.TopState . "`nBottom State: " . Node.BottomState
+    Sleep, 100
+}
 Return
 
 DisplayClick:

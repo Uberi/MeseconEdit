@@ -47,6 +47,11 @@ class Meselamp
         }
     }
 
+    PowerSourceConnected()
+    {
+        Return, 0
+    }
+
     ModifyState(Amount,OpenList = "")
     {
         global Grid

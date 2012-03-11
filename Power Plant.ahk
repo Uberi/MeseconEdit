@@ -63,6 +63,11 @@ class PowerPlant
         }
     }
 
+    PowerSourceConnected()
+    {
+        Return, 1
+    }
+
     Draw(X,Y,W,H)
     {
         global hMemoryDC
