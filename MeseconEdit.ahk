@@ -105,7 +105,10 @@ While, GetKeyState("LButton","P")
     {
         Gui, Submit, NoHide
         If ToolMesecon
+        {
+            Grid[MouseX,MouseY] := ""
             Grid[MouseX,MouseY] := new Mesecon(MouseX,MouseY)
+        }
         Else If ToolEmpty
         {
             If ObjHasKey(Grid,MouseX) && ObjHasKey(Grid[MouseX],MouseY)
@@ -116,9 +119,15 @@ While, GetKeyState("LButton","P")
             }
         }
         Else If ToolPowerPlant
+        {
+            Grid[MouseX,MouseY] := ""
             Grid[MouseX,MouseY] := new PowerPlant(MouseX,MouseY)
+        }
         Else If ToolMeselamp
+        {
+            Grid[MouseX,MouseY] := ""
             Grid[MouseX,MouseY] := new Meselamp(MouseX,MouseY)
+        }
         MouseX1 := MouseX, MouseY1 := MouseY
     }
     Sleep, 50
