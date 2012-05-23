@@ -10,8 +10,7 @@ class Mesecon
 
         If this.base.Count = 0 ;first mesecon instance
         {
-            this.base.hPen := DllCall("CreatePen","Int",5,"Int",0,"UInt",0,"UPtr") ;PS_NULL
-            this.base.hOffBrush := DllCall("CreateSolidBrush","UInt",0x00AAAA,"UPtr")
+            this.base.hOffBrush := DllCall("CreateSolidBrush","UInt",0x008888,"UPtr")
             this.base.hOnBrush := DllCall("CreateSolidBrush","UInt",0x00FFFF,"UPtr")
         }
         this.base.Count ++
@@ -139,8 +138,6 @@ class Mesecon
     Draw(X,Y,W,H)
     {
         global hMemoryDC, Grid
-        hOriginalPen := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",this.base.hPen,"UPtr") ;select the pen
-        hOriginalBrush := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",this.State ? this.base.hOnBrush : this.base.hOffBrush,"UPtr") ;select the brush
 
         ;check for neighbors
         Left := Grid[this.IndexX - 1,this.IndexY].Conductive
@@ -148,29 +145,52 @@ class Mesecon
         Top := Grid[this.IndexX,this.IndexY - 1].Conductive
         Bottom := Grid[this.IndexX,this.IndexY + 1].Conductive
 
-        ;draw the mesecon
+        hBrush := this.State ? this.base.hOnBrush : this.base.hOffBrush
+
+        VarSetCapacity(Rectangle,16)
+
+        ;draw horizontal bar
+        NumPut(Round(Y + (H * 0.4)),Rectangle,4,"Int")
+        NumPut(Round(Y + (H * 0.6)),Rectangle,12,"Int")
         If Left ;left neighbor
         {
-            If Right ;left and right neighbor
-                DllCall("Rectangle","UPtr",hMemoryDC,"Int",Round(X),"Int",Round(Y + (H * 0.4)),"Int",Round(X + W),"Int",Round(Y + (H * 0.6)))
-            Else ;left but not right neighbor
-                DllCall("Rectangle","UPtr",hMemoryDC,"Int",Round(X),"Int",Round(Y + (H * 0.4)),"Int",Round(X + (W * 0.6)),"Int",Round(Y + (H * 0.6)))
+            NumPut(Round(X),Rectangle,0,"Int")
+            If Right
+                NumPut(Round(X + W),Rectangle,8,"Int")
+            Else
+                NumPut(Round(X + (W * 0.6)),Rectangle,8,"Int")
+            DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
         }
         Else If Right ;right but not left neighbor
-            DllCall("Rectangle","UPtr",hMemoryDC,"Int",Round(X + (W * 0.4)),"Int",Round(Y + (H * 0.4)),"Int",Round(X + W),"Int",Round(Y + (H * 0.6)))
+        {
+            NumPut(Round(X + (W * 0.4)),Rectangle,0,"Int")
+            NumPut(Round(X + W),Rectangle,8,"Int")
+            DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
+        }
         Else If !(Top || Bottom) ;no neighbors
-            DllCall("Rectangle","UPtr",hMemoryDC,"Int",Round(X),"Int",Round(Y + (H * 0.4)),"Int",Round(X + W),"Int",Round(Y + (H * 0.6)))
+        {
+            NumPut(Round(X + (W * 0.4)),Rectangle,0,"Int")
+            NumPut(Round(X + (W * 0.6)),Rectangle,8,"Int")
+            DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
+        }
+
+        ;draw vertical bar
+        NumPut(Round(X + (W * 0.4)),Rectangle,0,"Int")
+        NumPut(Round(X + (W * 0.6)),Rectangle,8,"Int")
         If Top
         {
+            NumPut(Round(Y),Rectangle,4,"Int")
             If Bottom
-                DllCall("Rectangle","UPtr",hMemoryDC,"Int",Round(X + (W * 0.4)),"Int",Round(Y),"Int",Round(X + (W * 0.6)),"Int",Round(Y + H))
+                NumPut(Round(Y + H),Rectangle,12,"Int")
             Else
-                DllCall("Rectangle","UPtr",hMemoryDC,"Int",Round(X + (W * 0.4)),"Int",Round(Y),"Int",Round(X + (W * 0.6)),"Int",Round(Y + (H * 0.6)))
+                NumPut(Round(Y + (H * 0.6)),Rectangle,12,"Int")
+            DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
         }
         Else If Bottom
-            DllCall("Rectangle","UPtr",hMemoryDC,"Int",Round(X + (W * 0.4)),"Int",Round(Y + (H * 0.4)),"Int",Round(X + (W * 0.6)),"Int",Round(Y + H))
-
-        DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalPen,"UPtr") ;deselect the pen
-        DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalBrush,"UPtr") ;deselect the brush
+        {
+            NumPut(Round(Y + (H * 0.4)),Rectangle,12,"Int")
+            NumPut(Round(Y + H),Rectangle,12,"Int")
+            DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
+        }
     }
 }

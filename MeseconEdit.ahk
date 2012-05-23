@@ -1,5 +1,10 @@
 #NoEnv
 
+;wip: only redraw when needed
+;wip: continuous grab like in Blender
+;wip: move support files into new folder
+;wip: removing mesecon right next to a lamp doesn't turn off lamp
+
 /*
 Copyright 2012 Anthony Zhang <azhang9@gmail.com>
 
@@ -37,6 +42,7 @@ Gui, Add, Radio, vToolMesecon Checked, &Mesecon
 Gui, Add, Radio, vToolEmpty, &Empty
 Gui, Add, Radio, vToolPowerPlant, &PowerPlant
 Gui, Add, Radio, vToolMeselamp, Mese&lamp
+Gui, Add, Radio, vToolPlug, Pl&ug
 
 Gui, +Resize +MinSize300x200
 Gui, Show, w800 h600, MeseconEdit
@@ -63,6 +69,7 @@ GuiControl, Move, ToolMesecon, % "x10 y" . A_GuiHeight - 30 . " w100 h20"
 GuiControl, Move, ToolEmpty, % "x110 y" . A_GuiHeight - 30 . " w100 h20"
 GuiControl, Move, ToolPowerPlant, % "x210 y" . A_GuiHeight - 30 . " w100 h20"
 GuiControl, Move, ToolMeselamp, % "x310 y" . A_GuiHeight - 30 . " w100 h20"
+GuiControl, Move, ToolPlug, % "x410 y" . A_GuiHeight - 30 . " w100 h20"
 
 Sleep, 10
 Return
@@ -128,9 +135,14 @@ While, GetKeyState("LButton","P")
             Grid[MouseX,MouseY] := ""
             Grid[MouseX,MouseY] := new Meselamp(MouseX,MouseY)
         }
+        Else If ToolPlug
+        {
+            Grid[MouseX,MouseY] := ""
+            Grid[MouseX,MouseY] := new Plug(MouseX,MouseY)
+        }
         MouseX1 := MouseX, MouseY1 := MouseY
     }
-    Sleep, 50
+    Sleep, 1
 }
 Return
 
@@ -262,3 +274,4 @@ SizeWindow(Width,Height)
 #Include %A_ScriptDir%\Mesecon.ahk
 #Include %A_ScriptDir%\Power Plant.ahk
 #Include %A_ScriptDir%\Meselamp.ahk
+#Include %A_ScriptDir%\Plug.ahk

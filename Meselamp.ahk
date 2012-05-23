@@ -10,8 +10,7 @@ class Meselamp
 
         If this.base.Count = 0 ;first mesecon instance
         {
-            this.base.hPen := DllCall("CreatePen","Int",5,"Int",0,"UInt",0,"UPtr") ;PS_NULL
-            this.base.hOffBrush := DllCall("CreateSolidBrush","UInt",0x227777,"UPtr")
+            this.base.hOffBrush := DllCall("CreateSolidBrush","UInt",0x777777,"UPtr")
             this.base.hOnBrush := DllCall("CreateSolidBrush","UInt",0xFFFFFF,"UPtr")
         }
         this.base.Count ++
@@ -47,26 +46,27 @@ class Meselamp
         }
     }
 
-    PowerSourceConnected()
+    PowerSourceConnected(OpenList = "")
     {
         Return, 0
     }
 
     ModifyState(Amount,OpenList = "")
     {
-        global Grid
         this.State += Amount
     }
 
     Draw(X,Y,W,H)
     {
         global hMemoryDC, Grid
-        hOriginalPen := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",this.base.hPen,"UPtr") ;select the pen
-        hOriginalBrush := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",this.State ? this.base.hOnBrush : this.base.hOffBrush,"UPtr") ;select the brush
+        hBrush := this.State ? this.base.hOnBrush : this.base.hOffBrush ;select the brush
 
-        DllCall("Rectangle","UPtr",hMemoryDC,"Int",Round(X + (W * 0.1)),"Int",Round(Y + (H * 0.3)),"Int",Round(X + (W * 0.9)),"Int",Round(Y + (H * 0.7)))
+        VarSetCapacity(Rectangle,16)
 
-        DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalPen,"UPtr") ;deselect the pen
-        DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalBrush,"UPtr") ;deselect the brush
+        NumPut(Round(X + (W * 0.1)),Rectangle,0,"Int")
+        NumPut(Round(Y + (H * 0.3)),Rectangle,4,"Int")
+        NumPut(Round(X + (W * 0.9)),Rectangle,8,"Int")
+        NumPut(Round(Y + (H * 0.7)),Rectangle,12,"Int")
+        DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
     }
 }

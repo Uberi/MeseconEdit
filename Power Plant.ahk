@@ -47,10 +47,13 @@ class PowerPlant
         OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
         If Left.Conductive
             Left.ModifyState(-1,OpenList)
+        OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
         If Right.Conductive
             Right.ModifyState(-1,OpenList)
+        OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
         If Top.Conductive
             Top.ModifyState(-1,OpenList)
+        OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
         If Bottom.Conductive
             Bottom.ModifyState(-1,OpenList)
 
