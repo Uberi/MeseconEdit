@@ -16,7 +16,6 @@ class Plug
         this.base.Count ++
 
         this.IndexX := IndexX, this.IndexY := IndexY
-        this.Updated := 0
         this.Conductive := 1
 
         Left := Grid[IndexX - 1,IndexY]

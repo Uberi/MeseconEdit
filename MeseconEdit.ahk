@@ -3,7 +3,6 @@
 ;wip: only redraw when needed
 ;wip: continuous grab like in Blender
 ;wip: move support files into new folder
-;wip: removing mesecon right next to a lamp doesn't turn off lamp
 
 /*
 Copyright 2012 Anthony Zhang <azhang9@gmail.com>
@@ -271,7 +270,7 @@ SizeWindow(Width,Height)
         throw Exception("Could not select bitmap into memory device context.")
 }
 
-#Include %A_ScriptDir%\Mesecon.ahk
-#Include %A_ScriptDir%\Power Plant.ahk
-#Include %A_ScriptDir%\Meselamp.ahk
-#Include %A_ScriptDir%\Plug.ahk
+#Include %A_ScriptDir%\Nodes\Mesecon.ahk
+#Include %A_ScriptDir%\Nodes\Power Plant.ahk
+#Include %A_ScriptDir%\Nodes\Meselamp.ahk
+#Include %A_ScriptDir%\Nodes\Plug.ahk

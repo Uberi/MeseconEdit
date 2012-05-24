@@ -16,7 +16,6 @@ class PowerPlant
         this.base.Count ++
 
         this.IndexX := IndexX, this.IndexY := IndexY
-        this.Updated := 0
         this.Conductive := 1
         this.State := 1
 

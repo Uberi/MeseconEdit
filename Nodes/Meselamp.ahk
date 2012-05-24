@@ -6,7 +6,6 @@ class Meselamp
 
     __New(IndexX,IndexY)
     {
-        global hMemoryDC, Grid
 
         If this.base.Count = 0 ;first mesecon instance
         {
@@ -16,23 +15,9 @@ class Meselamp
         this.base.Count ++
 
         this.IndexX := IndexX, this.IndexY := IndexY
-        this.Updated := 0
         this.Conductive := 1
 
-        Left := Grid[IndexX - 1,IndexY]
-        Right := Grid[IndexX + 1,IndexY]
-        Top := Grid[IndexX,IndexY - 1]
-        Bottom := Grid[IndexX,IndexY + 1]
-
-        this.State := 0
-        If Left.Conductive && Left.State
-            this.State += Left.State
-        If Right.Conductive && Right.State
-            this.State += Right.State
-        If Top.Conductive && Top.State
-            this.State += Top.State
-        If Bottom.Conductive && Bottom.State
-            this.State += Bottom.State
+        this.Recalculate()
     }
 
     __Delete()
@@ -44,6 +29,26 @@ class Meselamp
             DllCall("DeleteObject","UPtr",this.base.hOnBrush)
             DllCall("DeleteObject","UPtr",this.base.hOffBrush)
         }
+    }
+
+    Recalculate(OpenList = "")
+    {
+        global Grid
+
+        Left := Grid[this.IndexX - 1,this.IndexY]
+        Right := Grid[this.IndexX + 1,this.IndexY]
+        Top := Grid[this.IndexX,this.IndexY - 1]
+        Bottom := Grid[this.IndexX,this.IndexY + 1]
+
+        this.State := 0
+        If Left.Conductive && Left.State
+            this.State += Left.State
+        If Right.Conductive && Right.State
+            this.State += Right.State
+        If Top.Conductive && Top.State
+            this.State += Top.State
+        If Bottom.Conductive && Bottom.State
+            this.State += Bottom.State
     }
 
     PowerSourceConnected(OpenList = "")
