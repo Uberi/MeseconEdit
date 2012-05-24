@@ -270,6 +270,116 @@ SizeWindow(Width,Height)
         throw Exception("Could not select bitmap into memory device context.")
 }
 
+class Power
+{
+    __New(IndexX,IndexY)
+    {
+        global Grid
+
+        this.IndexX := IndexX, this.IndexY := IndexY
+        this.Conductive := 1
+        this.State := 1
+
+        Left := Grid[IndexX - 1,IndexY]
+        Right := Grid[IndexX + 1,IndexY]
+        Top := Grid[IndexX,IndexY - 1]
+        Bottom := Grid[IndexX,IndexY + 1]
+
+        OpenList := [], OpenList[IndexX,IndexY] := 1
+        If Left.Conductive
+            Left.ModifyState(1,OpenList)
+        If Right.Conductive
+            Right.ModifyState(1,OpenList)
+        If Top.Conductive
+            Top.ModifyState(1,OpenList)
+        If Bottom.Conductive
+            Bottom.ModifyState(1,OpenList)
+    }
+
+    __Delete()
+    {
+        global Grid
+        Left := Grid[this.IndexX - 1,this.IndexY]
+        Right := Grid[this.IndexX + 1,this.IndexY]
+        Top := Grid[this.IndexX,this.IndexY - 1]
+        Bottom := Grid[this.IndexX,this.IndexY + 1]
+
+        OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
+        If Left.Conductive
+            Left.ModifyState(-1,OpenList)
+        OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
+        If Right.Conductive
+            Right.ModifyState(-1,OpenList)
+        OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
+        If Top.Conductive
+            Top.ModifyState(-1,OpenList)
+        OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
+        If Bottom.Conductive
+            Bottom.ModifyState(-1,OpenList)
+    }
+
+    Recalculate()
+    {
+        
+    }
+
+    PowerSourceConnected()
+    {
+        Return, 1
+    }
+
+    ModifyState(Amount,OpenList = "")
+    {
+        
+    }
+
+    Draw(X,Y,W,H)
+    {
+        
+    }
+}
+
+class Load
+{
+    __New(IndexX,IndexY)
+    {
+        this.IndexX := IndexX, this.IndexY := IndexY
+        this.Conductive := 1
+
+        this.Recalculate()
+    }
+
+    Recalculate(OpenList = "")
+    {
+        global Grid
+
+        Left := Grid[this.IndexX - 1,this.IndexY]
+        Right := Grid[this.IndexX + 1,this.IndexY]
+        Top := Grid[this.IndexX,this.IndexY - 1]
+        Bottom := Grid[this.IndexX,this.IndexY + 1]
+
+        this.State := 0
+        If Left.Conductive && Left.State
+            this.State += Left.State
+        If Right.Conductive && Right.State
+            this.State += Right.State
+        If Top.Conductive && Top.State
+            this.State += Top.State
+        If Bottom.Conductive && Bottom.State
+            this.State += Bottom.State
+    }
+
+    PowerSourceConnected(OpenList = "")
+    {
+        Return, 0
+    }
+
+    ModifyState(Amount,OpenList = "")
+    {
+        this.State += Amount
+    }
+}
+
 #Include %A_ScriptDir%\Nodes\Mesecon.ahk
 #Include %A_ScriptDir%\Nodes\Power Plant.ahk
 #Include %A_ScriptDir%\Nodes\Meselamp.ahk

@@ -1,12 +1,12 @@
 #NoEnv
 
-class Plug
+class Plug extends Load
 {
     static Count := 0
 
     __New(IndexX,IndexY)
     {
-        global hMemoryDC, Grid
+        global Grid
 
         If this.base.Count = 0 ;first mesecon instance
         {
@@ -15,23 +15,7 @@ class Plug
         }
         this.base.Count ++
 
-        this.IndexX := IndexX, this.IndexY := IndexY
-        this.Conductive := 1
-
-        Left := Grid[IndexX - 1,IndexY]
-        Right := Grid[IndexX + 1,IndexY]
-        Top := Grid[IndexX,IndexY - 1]
-        Bottom := Grid[IndexX,IndexY + 1]
-
-        this.State := 0
-        If Left.Conductive && Left.State
-            this.State += Left.State
-        If Right.Conductive && Right.State
-            this.State += Right.State
-        If Top.Conductive && Top.State
-            this.State += Top.State
-        If Bottom.Conductive && Bottom.State
-            this.State += Bottom.State
+        base.__New(IndexX,IndexY)
     }
 
     __Delete()
@@ -45,14 +29,18 @@ class Plug
         }
     }
 
-    PowerSourceConnected()
-    {
-        Return, 0
-    }
-
     ModifyState(Amount,OpenList = "")
     {
-        this.State += Amount
+        global Grid
+        base.ModifyState(Amount,OpenList)
+        If this.State ;plug on
+        {
+            
+        }
+        Else ;plug off
+        {
+            
+        }
     }
 
     Draw(X,Y,W,H)

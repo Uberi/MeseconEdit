@@ -1,12 +1,11 @@
 #NoEnv
 
-class Meselamp
+class Meselamp extends Load
 {
     static Count := 0
 
     __New(IndexX,IndexY)
     {
-
         If this.base.Count = 0 ;first mesecon instance
         {
             this.base.hOffBrush := DllCall("CreateSolidBrush","UInt",0x777777,"UPtr")
@@ -14,10 +13,7 @@ class Meselamp
         }
         this.base.Count ++
 
-        this.IndexX := IndexX, this.IndexY := IndexY
-        this.Conductive := 1
-
-        this.Recalculate()
+        base.__New(IndexX,IndexY)
     }
 
     __Delete()
@@ -31,39 +27,9 @@ class Meselamp
         }
     }
 
-    Recalculate(OpenList = "")
-    {
-        global Grid
-
-        Left := Grid[this.IndexX - 1,this.IndexY]
-        Right := Grid[this.IndexX + 1,this.IndexY]
-        Top := Grid[this.IndexX,this.IndexY - 1]
-        Bottom := Grid[this.IndexX,this.IndexY + 1]
-
-        this.State := 0
-        If Left.Conductive && Left.State
-            this.State += Left.State
-        If Right.Conductive && Right.State
-            this.State += Right.State
-        If Top.Conductive && Top.State
-            this.State += Top.State
-        If Bottom.Conductive && Bottom.State
-            this.State += Bottom.State
-    }
-
-    PowerSourceConnected(OpenList = "")
-    {
-        Return, 0
-    }
-
-    ModifyState(Amount,OpenList = "")
-    {
-        this.State += Amount
-    }
-
     Draw(X,Y,W,H)
     {
-        global hMemoryDC, Grid
+        global hMemoryDC
         hBrush := this.State ? this.base.hOnBrush : this.base.hOffBrush ;select the brush
 
         VarSetCapacity(Rectangle,16)
