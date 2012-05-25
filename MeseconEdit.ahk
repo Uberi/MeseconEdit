@@ -43,6 +43,7 @@ Gui, Add, Radio, vToolPowerPlant, &PowerPlant
 Gui, Add, Radio, vToolMeselamp, Mese&lamp
 Gui, Add, Radio, vToolPlug, Pl&ug
 Gui, Add, Radio, vToolSocket, &Socket
+Gui, Add, Radio, vToolInverter, &Inverter
 
 Gui, +Resize +MinSize300x200
 Gui, Show, w800 h600, MeseconEdit
@@ -71,6 +72,7 @@ GuiControl, Move, ToolPowerPlant, % "x210 y" . A_GuiHeight - 30 . " w100 h20"
 GuiControl, Move, ToolMeselamp, % "x310 y" . A_GuiHeight - 30 . " w100 h20"
 GuiControl, Move, ToolPlug, % "x410 y" . A_GuiHeight - 30 . " w100 h20"
 GuiControl, Move, ToolSocket, % "x510 y" . A_GuiHeight - 30 . " w100 h20"
+GuiControl, Move, ToolInverter, % "x610 y" . A_GuiHeight - 30 . " w100 h20"
 
 Sleep, 10
 Return
@@ -131,6 +133,8 @@ While, GetKeyState("LButton","P")
             Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new Plug(MouseX,MouseY)
         Else If ToolSocket
             Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new Socket(MouseX,MouseY)
+        Else If ToolInverter
+            Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new Inverter(MouseX,MouseY)
         MouseX1 := MouseX, MouseY1 := MouseY
     }
     Sleep, 1
@@ -369,3 +373,4 @@ class Load
 #Include %A_ScriptDir%\Nodes\Meselamp.ahk
 #Include %A_ScriptDir%\Nodes\Plug.ahk
 #Include %A_ScriptDir%\Nodes\Socket.ahk
+#Include %A_ScriptDir%\Nodes\Inverter.ahk
