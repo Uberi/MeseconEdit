@@ -72,7 +72,7 @@ class Mesecon
         Top := Grid[this.IndexX,this.IndexY - 1]
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
-        this.State := this.PowerSourceConnected(OpenList)
+        this.State := this.PowerSourceConnected([])
 
         ;update neighbor nodes
         If Left.Receive && !OpenList[Left.IndexX,Left.IndexY]
