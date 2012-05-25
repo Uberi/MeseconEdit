@@ -15,13 +15,11 @@ class Socket extends Power
         }
         this.base.Count ++
 
-        base.__New(IndexX,IndexY)
-
         this.State := 0
-        For Index, Cell In [Grid[this.IndexX - 2,this.IndexY]
-                           ,Grid[this.IndexX + 2,this.IndexY]
-                           ,Grid[this.IndexX,this.IndexY - 2]
-                           ,Grid[this.IndexX,this.IndexY + 2]]
+        For Index, Cell In [Grid[IndexX - 2,IndexY]
+                           ,Grid[IndexX + 2,IndexY]
+                           ,Grid[IndexX,IndexY - 2]
+                           ,Grid[IndexX,IndexY + 2]]
         { ;wip: check for blank node between plug and socket/inverter
             If Cell.__Class = "Plug" && Cell.State
             {
@@ -29,6 +27,8 @@ class Socket extends Power
                 Break
             }
         }
+
+        base.__New(IndexX,IndexY)
     }
 
     __Delete()

@@ -275,22 +275,20 @@ class Power
         this.IndexX := IndexX, this.IndexY := IndexY
         this.Send := 1
         this.Receive := 0
-        this.State := 1
 
         Left := Grid[IndexX - 1,IndexY]
         Right := Grid[IndexX + 1,IndexY]
         Top := Grid[IndexX,IndexY - 1]
         Bottom := Grid[IndexX,IndexY + 1]
 
-        OpenList := [], OpenList[IndexX,IndexY] := 1
         If Left.Receive
-            Left.ModifyState(this.State,OpenList)
+            Left.ModifyState(this.State,[])
         If Right.Receive
-            Right.ModifyState(this.State,OpenList)
+            Right.ModifyState(this.State,[])
         If Top.Receive
-            Top.ModifyState(this.State,OpenList)
+            Top.ModifyState(this.State,[])
         If Bottom.Receive
-            Bottom.ModifyState(this.State,OpenList)
+            Bottom.ModifyState(this.State,[])
     }
 
     __Delete()
@@ -301,18 +299,14 @@ class Power
         Top := Grid[this.IndexX,this.IndexY - 1]
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
-        OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
         If Left.Receive
-            Left.ModifyState(-this.State,OpenList)
-        OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
+            Left.ModifyState(-this.State,[])
         If Right.Receive
-            Right.ModifyState(-this.State,OpenList)
-        OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
+            Right.ModifyState(-this.State,[])
         If Top.Receive
-            Top.ModifyState(-this.State,OpenList)
-        OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
+            Top.ModifyState(-this.State,[])
         If Bottom.Receive
-            Bottom.ModifyState(-this.State,OpenList)
+            Bottom.ModifyState(-this.State,[])
     }
 
     PowerSourceConnected()
@@ -334,8 +328,7 @@ class Load
         this.Send := 0
         this.Receive := 1
 
-        OpenList := []
-        this.Recalculate(OpenList)
+        this.Recalculate([])
     }
 
     Recalculate(OpenList)

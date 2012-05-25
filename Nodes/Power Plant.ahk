@@ -13,6 +13,7 @@ class PowerPlant extends Power
         }
         this.base.Count ++
 
+        this.State := 1
         base.__New(IndexX,IndexY)
     }
 

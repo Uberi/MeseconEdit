@@ -51,7 +51,7 @@ class Mesecon
 
     __Delete()
     {
-        this.Recalculate()
+        this.Recalculate([])
 
         this.base.Count --
         If this.base.Count = 0 ;last mesecon instance
@@ -65,8 +65,6 @@ class Mesecon
     Recalculate(OpenList)
     {
         global Grid
-        If (OpenList = "")
-            OpenList := []
         OpenList[this.IndexX,this.IndexY] := 1
 
         Left := Grid[this.IndexX - 1,this.IndexY]
@@ -74,7 +72,7 @@ class Mesecon
         Top := Grid[this.IndexX,this.IndexY - 1]
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
-        this.State := this.PowerSourceConnected()
+        this.State := this.PowerSourceConnected(OpenList)
 
         ;update neighbor nodes
         If Left.Receive && !OpenList[Left.IndexX,Left.IndexY]
