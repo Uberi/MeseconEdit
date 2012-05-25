@@ -62,7 +62,7 @@ class Mesecon
         }
     }
 
-    Recalculate(OpenList = "")
+    Recalculate(OpenList)
     {
         global Grid
         If (OpenList = "")
@@ -87,11 +87,9 @@ class Mesecon
             Bottom.Recalculate(OpenList)
     }
 
-    PowerSourceConnected(OpenList = "")
+    PowerSourceConnected(OpenList)
     {
         global Grid
-        If (OpenList = "")
-            OpenList := []
         OpenList[this.IndexX,this.IndexY] := 1
 
         Left := Grid[this.IndexX - 1,this.IndexY]
@@ -111,12 +109,10 @@ class Mesecon
         Return, Result
     }
 
-    ModifyState(Amount,OpenList = "")
+    ModifyState(Amount,OpenList)
     {
         global Grid
         this.State += Amount
-        If (OpenList = "")
-            OpenList := []
         OpenList[this.IndexX,this.IndexY] := 1
 
         Left := Grid[this.IndexX - 1,this.IndexY]

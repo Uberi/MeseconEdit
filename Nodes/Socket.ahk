@@ -6,6 +6,8 @@ class Socket extends Power
 
     __New(IndexX,IndexY)
     {
+        global Grid
+
         If this.base.Count = 0 ;first mesecon instance
         {
             this.base.hPen := DllCall("CreatePen","Int",5,"Int",0,"UInt",0,"UPtr") ;PS_NULL
@@ -14,7 +16,19 @@ class Socket extends Power
         this.base.Count ++
 
         base.__New(IndexX,IndexY)
+
         this.State := 0
+        For Index, Cell In [Grid[this.IndexX - 2,this.IndexY]
+                           ,Grid[this.IndexX + 2,this.IndexY]
+                           ,Grid[this.IndexX,this.IndexY - 2]
+                           ,Grid[this.IndexX,this.IndexY + 2]]
+        { ;wip: check for blank node between plug and socket/inverter
+            If Cell.__Class = "Plug" && Cell.State
+            {
+                this.State := 1
+                Break
+            }
+        }
     }
 
     __Delete()
@@ -28,6 +42,28 @@ class Socket extends Power
             DllCall("DeleteObject","UPtr",this.base.hOnBrush)
             DllCall("DeleteObject","UPtr",this.base.hOffBrush)
         }
+    }
+
+    ModifyState(Amount,OpenList)
+    {
+        global Grid
+        this.State += Amount
+        OpenList[this.IndexX,this.IndexY] := 1
+
+        Left := Grid[this.IndexX - 1,this.IndexY]
+        Right := Grid[this.IndexX + 1,this.IndexY]
+        Top := Grid[this.IndexX,this.IndexY - 1]
+        Bottom := Grid[this.IndexX,this.IndexY + 1]
+
+        ;update neighbor nodes
+        If Left.Receive && !OpenList[Left.IndexX,Left.IndexY]
+            Left.ModifyState(Amount,OpenList)
+        If Right.Receive && !OpenList[Right.IndexX,Right.IndexY]
+            Right.ModifyState(Amount,OpenList)
+        If Top.Receive && !OpenList[Top.IndexX,Top.IndexY]
+            Top.ModifyState(Amount,OpenList)
+        If Bottom.Receive && !OpenList[Bottom.IndexX,Bottom.IndexY]
+            Bottom.ModifyState(Amount,OpenList)
     }
 
     Draw(X,Y,W,H)

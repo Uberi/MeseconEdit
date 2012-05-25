@@ -334,10 +334,11 @@ class Load
         this.Send := 0
         this.Receive := 1
 
-        this.Recalculate()
+        OpenList := []
+        this.Recalculate(OpenList)
     }
 
-    Recalculate(OpenList = "")
+    Recalculate(OpenList)
     {
         global Grid
 
@@ -357,12 +358,12 @@ class Load
             this.State += Bottom.State
     }
 
-    PowerSourceConnected(OpenList = "")
+    PowerSourceConnected(OpenList)
     {
         Return, 0
     }
 
-    ModifyState(Amount,OpenList = "")
+    ModifyState(Amount,OpenList)
     {
         this.State += Amount
     }

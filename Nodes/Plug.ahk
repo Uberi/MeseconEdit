@@ -29,7 +29,7 @@ class Plug extends Load
         }
     }
 
-    ModifyState(Amount,OpenList = "")
+    ModifyState(Amount,OpenList)
     {
         global Grid
         base.ModifyState(Amount,OpenList)
@@ -39,7 +39,7 @@ class Plug extends Load
                                ,Grid[this.IndexX + 2,this.IndexY]
                                ,Grid[this.IndexX,this.IndexY - 2]
                                ,Grid[this.IndexX,this.IndexY + 2]]
-            {
+            { ;wip: check for blank node between plug and socket/inverter
                 If Cell.__Class = "Socket" && !Cell.State
                     Cell.ModifyState(1,OpenList)
                 If Cell.__Class = "Inverter" && Cell.State
