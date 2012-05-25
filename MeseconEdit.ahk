@@ -42,6 +42,7 @@ Gui, Add, Radio, vToolEmpty, &Empty
 Gui, Add, Radio, vToolPowerPlant, &PowerPlant
 Gui, Add, Radio, vToolMeselamp, Mese&lamp
 Gui, Add, Radio, vToolPlug, Pl&ug
+Gui, Add, Radio, vToolSocket, &Socket
 
 Gui, +Resize +MinSize300x200
 Gui, Show, w800 h600, MeseconEdit
@@ -69,6 +70,7 @@ GuiControl, Move, ToolEmpty, % "x110 y" . A_GuiHeight - 30 . " w100 h20"
 GuiControl, Move, ToolPowerPlant, % "x210 y" . A_GuiHeight - 30 . " w100 h20"
 GuiControl, Move, ToolMeselamp, % "x310 y" . A_GuiHeight - 30 . " w100 h20"
 GuiControl, Move, ToolPlug, % "x410 y" . A_GuiHeight - 30 . " w100 h20"
+GuiControl, Move, ToolSocket, % "x510 y" . A_GuiHeight - 30 . " w100 h20"
 
 Sleep, 10
 Return
@@ -111,10 +113,7 @@ While, GetKeyState("LButton","P")
     {
         Gui, Submit, NoHide
         If ToolMesecon
-        {
-            Grid[MouseX,MouseY] := ""
-            Grid[MouseX,MouseY] := new Mesecon(MouseX,MouseY)
-        }
+            Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new Mesecon(MouseX,MouseY)
         Else If ToolEmpty
         {
             If ObjHasKey(Grid,MouseX) && ObjHasKey(Grid[MouseX],MouseY)
@@ -125,20 +124,13 @@ While, GetKeyState("LButton","P")
             }
         }
         Else If ToolPowerPlant
-        {
-            Grid[MouseX,MouseY] := ""
-            Grid[MouseX,MouseY] := new PowerPlant(MouseX,MouseY)
-        }
+            Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new PowerPlant(MouseX,MouseY)
         Else If ToolMeselamp
-        {
-            Grid[MouseX,MouseY] := ""
-            Grid[MouseX,MouseY] := new Meselamp(MouseX,MouseY)
-        }
+            Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new Meselamp(MouseX,MouseY)
         Else If ToolPlug
-        {
-            Grid[MouseX,MouseY] := ""
-            Grid[MouseX,MouseY] := new Plug(MouseX,MouseY)
-        }
+            Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new Plug(MouseX,MouseY)
+        Else If ToolSocket
+            Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new Socket(MouseX,MouseY)
         MouseX1 := MouseX, MouseY1 := MouseY
     }
     Sleep, 1
@@ -376,3 +368,4 @@ class Load
 #Include %A_ScriptDir%\Nodes\Power Plant.ahk
 #Include %A_ScriptDir%\Nodes\Meselamp.ahk
 #Include %A_ScriptDir%\Nodes\Plug.ahk
+#Include %A_ScriptDir%\Nodes\Socket.ahk

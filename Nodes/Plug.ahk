@@ -63,7 +63,7 @@ class Plug extends Load
 
     Draw(X,Y,W,H)
     {
-        global hMemoryDC, Grid
+        global hMemoryDC
         hOriginalPen := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",this.base.hPen,"UPtr") ;select the pen
         hOriginalBrush := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",this.base.hBrush,"UPtr") ;select the brush
 
