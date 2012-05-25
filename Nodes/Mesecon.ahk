@@ -16,6 +16,7 @@ class Mesecon
         this.base.Count ++
 
         this.IndexX := IndexX, this.IndexY := IndexY
+        this.Active := 1
         this.Conductive := 1
 
         Left := Grid[IndexX - 1,IndexY]

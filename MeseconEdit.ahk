@@ -277,6 +277,7 @@ class Power
         global Grid
 
         this.IndexX := IndexX, this.IndexY := IndexY
+        this.Active := 0
         this.Conductive := 1
         this.State := 1
 
@@ -344,7 +345,8 @@ class Load
     __New(IndexX,IndexY)
     {
         this.IndexX := IndexX, this.IndexY := IndexY
-        this.Conductive := 1
+        this.Active := 1
+        this.Conductive := 0
 
         this.Recalculate()
     }
