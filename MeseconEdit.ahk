@@ -277,8 +277,8 @@ class Power
         global Grid
 
         this.IndexX := IndexX, this.IndexY := IndexY
-        this.Active := 0
-        this.Conductive := 1
+        this.Send := 1
+        this.Receive := 0
         this.State := 1
 
         Left := Grid[IndexX - 1,IndexY]
@@ -287,14 +287,14 @@ class Power
         Bottom := Grid[IndexX,IndexY + 1]
 
         OpenList := [], OpenList[IndexX,IndexY] := 1
-        If Left.Conductive
-            Left.ModifyState(1,OpenList)
-        If Right.Conductive
-            Right.ModifyState(1,OpenList)
-        If Top.Conductive
-            Top.ModifyState(1,OpenList)
-        If Bottom.Conductive
-            Bottom.ModifyState(1,OpenList)
+        If Left.Receive
+            Left.ModifyState(this.State,OpenList)
+        If Right.Receive
+            Right.ModifyState(this.State,OpenList)
+        If Top.Receive
+            Top.ModifyState(this.State,OpenList)
+        If Bottom.Receive
+            Bottom.ModifyState(this.State,OpenList)
     }
 
     __Delete()
@@ -306,32 +306,22 @@ class Power
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
         OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
-        If Left.Conductive
-            Left.ModifyState(-1,OpenList)
+        If Left.Receive
+            Left.ModifyState(-this.State,OpenList)
         OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
-        If Right.Conductive
-            Right.ModifyState(-1,OpenList)
+        If Right.Receive
+            Right.ModifyState(-this.State,OpenList)
         OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
-        If Top.Conductive
-            Top.ModifyState(-1,OpenList)
+        If Top.Receive
+            Top.ModifyState(-this.State,OpenList)
         OpenList := [], OpenList[this.IndexX,this.IndexY] := 1
-        If Bottom.Conductive
-            Bottom.ModifyState(-1,OpenList)
-    }
-
-    Recalculate()
-    {
-        
+        If Bottom.Receive
+            Bottom.ModifyState(-this.State,OpenList)
     }
 
     PowerSourceConnected()
     {
-        Return, 1
-    }
-
-    ModifyState(Amount,OpenList = "")
-    {
-        
+        Return, this.State
     }
 
     Draw(X,Y,W,H)
@@ -345,8 +335,8 @@ class Load
     __New(IndexX,IndexY)
     {
         this.IndexX := IndexX, this.IndexY := IndexY
-        this.Active := 1
-        this.Conductive := 0
+        this.Send := 0
+        this.Receive := 1
 
         this.Recalculate()
     }
@@ -361,13 +351,13 @@ class Load
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
         this.State := 0
-        If Left.Conductive && Left.State
+        If Left.Send && Left.State
             this.State += Left.State
-        If Right.Conductive && Right.State
+        If Right.Send && Right.State
             this.State += Right.State
-        If Top.Conductive && Top.State
+        If Top.Send && Top.State
             this.State += Top.State
-        If Bottom.Conductive && Bottom.State
+        If Bottom.Send && Bottom.State
             this.State += Bottom.State
     }
 

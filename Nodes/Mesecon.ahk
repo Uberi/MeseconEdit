@@ -16,8 +16,8 @@ class Mesecon
         this.base.Count ++
 
         this.IndexX := IndexX, this.IndexY := IndexY
-        this.Active := 1
-        this.Conductive := 1
+        this.Send := 1
+        this.Receive := 1
 
         Left := Grid[IndexX - 1,IndexY]
         Right := Grid[IndexX + 1,IndexY]
@@ -25,26 +25,26 @@ class Mesecon
         Bottom := Grid[IndexX,IndexY + 1]
 
         this.State := 0
-        If Left.Conductive && Left.State
+        If Left.Send && Left.State
             this.State += Left.State
-        If Right.Conductive && Right.State
+        If Right.Send && Right.State
             this.State += Right.State
-        If Top.Conductive && Top.State
+        If Top.Send && Top.State
             this.State += Top.State
-        If Bottom.Conductive && Bottom.State
+        If Bottom.Send && Bottom.State
             this.State += Bottom.State
 
         If this.State
         {
             OpenList := [], OpenList[IndexX,IndexY] := 1
 
-            If Left.Conductive
+            If Left.Receive
                 Left.ModifyState(this.State - Left.State,OpenList)
-            If Right.Conductive
+            If Right.Receive
                 Right.ModifyState(this.State - Right.State,OpenList)
-            If Top.Conductive
+            If Top.Receive
                 Top.ModifyState(this.State - Top.State,OpenList)
-            If Bottom.Conductive
+            If Bottom.Receive
                 Bottom.ModifyState(this.State - Bottom.State,OpenList)
         }
     }
@@ -77,13 +77,13 @@ class Mesecon
         this.State := this.PowerSourceConnected()
 
         ;update neighbor nodes
-        If Left.Conductive && !OpenList[Left.IndexX,Left.IndexY]
+        If Left.Receive && !OpenList[Left.IndexX,Left.IndexY]
             Left.Recalculate(OpenList)
-        If Right.Conductive && !OpenList[Right.IndexX,Right.IndexY]
+        If Right.Receive && !OpenList[Right.IndexX,Right.IndexY]
             Right.Recalculate(OpenList)
-        If Top.Conductive && !OpenList[Top.IndexX,Top.IndexY]
+        If Top.Receive && !OpenList[Top.IndexX,Top.IndexY]
             Top.Recalculate(OpenList)
-        If Bottom.Conductive && !OpenList[Bottom.IndexX,Bottom.IndexY]
+        If Bottom.Receive && !OpenList[Bottom.IndexX,Bottom.IndexY]
             Bottom.Recalculate(OpenList)
     }
 
@@ -100,13 +100,13 @@ class Mesecon
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
         Result := 0
-        If Left.Conductive && !OpenList[Left.IndexX,Left.IndexY]
+        If Left.Send && !OpenList[Left.IndexX,Left.IndexY]
             Result += Left.PowerSourceConnected(OpenList)
-        If Right.Conductive && !OpenList[Right.IndexX,Right.IndexY]
+        If Right.Send && !OpenList[Right.IndexX,Right.IndexY]
             Result += Right.PowerSourceConnected(OpenList)
-        If Top.Conductive && !OpenList[Top.IndexX,Top.IndexY]
+        If Top.Send && !OpenList[Top.IndexX,Top.IndexY]
             Result += Top.PowerSourceConnected(OpenList)
-        If Bottom.Conductive && !OpenList[Bottom.IndexX,Bottom.IndexY]
+        If Bottom.Send && !OpenList[Bottom.IndexX,Bottom.IndexY]
             Result += Bottom.PowerSourceConnected(OpenList)
         Return, Result
     }
@@ -125,13 +125,13 @@ class Mesecon
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
         ;update neighbor nodes
-        If Left.Conductive && !OpenList[Left.IndexX,Left.IndexY]
+        If Left.Receive && !OpenList[Left.IndexX,Left.IndexY]
             Left.ModifyState(Amount,OpenList)
-        If Right.Conductive && !OpenList[Right.IndexX,Right.IndexY]
+        If Right.Receive && !OpenList[Right.IndexX,Right.IndexY]
             Right.ModifyState(Amount,OpenList)
-        If Top.Conductive && !OpenList[Top.IndexX,Top.IndexY]
+        If Top.Receive && !OpenList[Top.IndexX,Top.IndexY]
             Top.ModifyState(Amount,OpenList)
-        If Bottom.Conductive && !OpenList[Bottom.IndexX,Bottom.IndexY]
+        If Bottom.Receive && !OpenList[Bottom.IndexX,Bottom.IndexY]
             Bottom.ModifyState(Amount,OpenList)
     }
 
@@ -140,10 +140,10 @@ class Mesecon
         global hMemoryDC, Grid
 
         ;check for neighbors
-        Left := Grid[this.IndexX - 1,this.IndexY].Conductive
-        Right := Grid[this.IndexX + 1,this.IndexY].Conductive
-        Top := Grid[this.IndexX,this.IndexY - 1].Conductive
-        Bottom := Grid[this.IndexX,this.IndexY + 1].Conductive
+        Left := Grid[this.IndexX - 1,this.IndexY], Left := Left.Send || Left.Receive
+        Right := Grid[this.IndexX + 1,this.IndexY], Right := Right.Send || Right.Receive
+        Top := Grid[this.IndexX,this.IndexY - 1], Top := Top.Send || Top.Receive
+        Bottom := Grid[this.IndexX,this.IndexY + 1], Bottom := Bottom.Send || Bottom.Receive
 
         hBrush := this.State ? this.base.hOnBrush : this.base.hOffBrush
 

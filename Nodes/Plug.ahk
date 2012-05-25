@@ -35,11 +35,29 @@ class Plug extends Load
         base.ModifyState(Amount,OpenList)
         If this.State ;plug on
         {
-            
+            For Index, Cell In [Grid[this.IndexX - 2,this.IndexY]
+                               ,Grid[this.IndexX + 2,this.IndexY]
+                               ,Grid[this.IndexX,this.IndexY - 2]
+                               ,Grid[this.IndexX,this.IndexY + 2]]
+            {
+                If Cell.__Class = "Socket" && !Cell.State
+                    Cell.ModifyState(1,OpenList)
+                If Cell.__Class = "Inverter" && Cell.State
+                    Cell.ModifyState(-1,OpenList)
+            }
         }
         Else ;plug off
         {
-            
+            For Index, Cell In [Grid[this.IndexX - 2,this.IndexY]
+                               ,Grid[this.IndexX + 2,this.IndexY]
+                               ,Grid[this.IndexX,this.IndexY - 2]
+                               ,Grid[this.IndexX,this.IndexY + 2]]
+            {
+                If Cell.__Class = "Socket" && Cell.State
+                    Cell.ModifyState(-1,OpenList)
+                If Cell.__Class = "Inverter" && !Cell.State
+                    Cell.ModifyState(1,OpenList)
+            }
         }
     }
 
