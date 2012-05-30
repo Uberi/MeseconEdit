@@ -2,7 +2,7 @@
 
 ;wip: only redraw when needed
 ;wip: continuous grab like in Blender
-;wip: move support files into new folder
+;wip: wrap controls on window resize
 
 /*
 Copyright 2012 Anthony Zhang <azhang9@gmail.com>
@@ -31,21 +31,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Width := 800
 Height := 600
 
+Tools := []
+Tools.Insert(Object("Name","&Mesecon",    "Handler",NodeActions.Add,"Class",Mesecon))
+Tools.Insert(Object("Name","&Empty",      "Handler",NodeActions.Remove))
+Tools.Insert(Object("Name","&Power Plant","Handler",NodeActions.Add,"Class",PowerPlant))
+Tools.Insert(Object("Name","Mese&lamp",   "Handler",NodeActions.Add,"Class",Meselamp))
+Tools.Insert(Object("Name","Pl&ug",       "Handler",NodeActions.Add,"Class",Plug))
+Tools.Insert(Object("Name","&Socket",     "Handler",NodeActions.Add,"Class",Socket))
+Tools.Insert(Object("Name","&Inverter",   "Handler",NodeActions.Add,"Class",Inverter))
+
 Gui, Add, Text, vDisplay gDisplayClick hwndhControl
 
 Grid := []
 Viewport := Object("X",-14.5,"Y",-14.5,"W",30,"H",30)
 InitializeViewport(hControl,Width,Height)
 
-Gui, Add, Radio, vToolMesecon Checked, &Mesecon
-Gui, Add, Radio, vToolEmpty, &Empty
-Gui, Add, Radio, vToolPowerPlant, &PowerPlant
-Gui, Add, Radio, vToolMeselamp, Mese&lamp
-Gui, Add, Radio, vToolPlug, Pl&ug
-Gui, Add, Radio, vToolSocket, &Socket
-Gui, Add, Radio, vToolInverter, &Inverter
+For Index, Tool In Tools
+    Gui, Add, Radio, vTool%Index%, % Tool.Name
+GuiControl,, Tool1, 1
 
-Gui, +Resize +MinSize300x200
+Gui, +Resize +MinSize600x400
 Gui, Show, w800 h600, MeseconEdit
 
 Gosub, Draw
@@ -66,19 +71,14 @@ Viewport.Y += Viewport.H / 2
 Viewport.H := (Height / Width) * Viewport.W
 Viewport.Y -= Viewport.H / 2
 
-GuiControl, Move, ToolMesecon, % "x10 y" . A_GuiHeight - 30 . " w100 h20"
-GuiControl, Move, ToolEmpty, % "x110 y" . A_GuiHeight - 30 . " w100 h20"
-GuiControl, Move, ToolPowerPlant, % "x210 y" . A_GuiHeight - 30 . " w100 h20"
-GuiControl, Move, ToolMeselamp, % "x310 y" . A_GuiHeight - 30 . " w100 h20"
-GuiControl, Move, ToolPlug, % "x410 y" . A_GuiHeight - 30 . " w100 h20"
-GuiControl, Move, ToolSocket, % "x510 y" . A_GuiHeight - 30 . " w100 h20"
-GuiControl, Move, ToolInverter, % "x610 y" . A_GuiHeight - 30 . " w100 h20"
+For Index In Tools
+    GuiControl, Move, Tool%Index%, % "x" . ((Index * 100) - 90) . " y" . (A_GuiHeight - 30) . " w100 h20"
 
 Sleep, 10
 Return
 
 Draw:
-Draw(Width,Height,Viewport)
+Draw(Grid,Width,Height,Viewport)
 Return
 
 #IfWinActive MeseconEdit ahk_class AutoHotkeyGUI
@@ -106,6 +106,25 @@ While, GetKeyState("Space","P")
 }
 Return
 
+class NodeActions
+{
+    Add(Grid,MouseX,MouseY,Tool)
+    {
+        Grid[MouseX,MouseY] := ""
+        Grid[MouseX,MouseY] := new Tool.Class(MouseX,MouseY)
+    }
+
+    Remove(Grid,MouseX,MouseY,Tool)
+    {
+        If Grid.HasKey(MouseX) && Grid[MouseX].HasKey(MouseY)
+        {
+            Grid[MouseX].Remove(MouseY,"")
+            If Grid[MouseX].MaxIndex() = ""
+                Grid.Remove(MouseX,"")
+        }
+    }
+}
+
 DisplayClick:
 MouseX1 := ~0, MouseY1 := ~0
 While, GetKeyState("LButton","P")
@@ -114,27 +133,14 @@ While, GetKeyState("LButton","P")
     If (MouseX != MouseX1 || MouseY != MouseY1)
     {
         Gui, Submit, NoHide
-        If ToolMesecon
-            Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new Mesecon(MouseX,MouseY)
-        Else If ToolEmpty
+        For Index, Tool In Tools
         {
-            If ObjHasKey(Grid,MouseX) && ObjHasKey(Grid[MouseX],MouseY)
+            If Tool%Index%
             {
-                Grid[MouseX].Remove(MouseY,"")
-                If ObjMaxIndex(Grid[MouseX]) = ""
-                    Grid.Remove(MouseX,"")
+                Tool.Handler(Grid,MouseX,MouseY,Tool)
+                Break
             }
         }
-        Else If ToolPowerPlant
-            Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new PowerPlant(MouseX,MouseY)
-        Else If ToolMeselamp
-            Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new Meselamp(MouseX,MouseY)
-        Else If ToolPlug
-            Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new Plug(MouseX,MouseY)
-        Else If ToolSocket
-            Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new Socket(MouseX,MouseY)
-        Else If ToolInverter
-            Grid[MouseX,MouseY] := "", Grid[MouseX,MouseY] := new Inverter(MouseX,MouseY)
         MouseX1 := MouseX, MouseY1 := MouseY
     }
     Sleep, 1
@@ -196,9 +202,9 @@ UninitializeViewport(hWindow)
         throw Exception("Could not release window device context.")
 }
 
-Draw(Width,Height,Viewport)
+Draw(Grid,Width,Height,Viewport)
 {
-    global hDC, hMemoryDC, Grid
+    global hDC, hMemoryDC
     static hPen := DllCall("CreatePen","Int",0,"Int",0,"UInt",0x888888,"UPtr") ;PS_SOLID
 
     ;clear the bitmap
