@@ -1,8 +1,8 @@
 #NoEnv
 
 ;wip: only redraw when needed
-;wip: continuous grab like in Blender
 ;wip: wrap controls on window resize
+;wip: file saving/loading and new nodes
 
 /*
 Copyright 2012 Anthony Zhang <azhang9@gmail.com>
@@ -22,8 +22,6 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-;wip: file saving/loading and new nodes
 
 #Warn All
 #Warn LocalSameAsGlobal, Off
@@ -84,14 +82,42 @@ Return
 #IfWinActive MeseconEdit ahk_class AutoHotkeyGUI
 
 ~RButton::
+CoordMode, Mouse, Client
 MouseGetPos, OffsetX, OffsetY
-PositionX := Viewport.X, PositionY := Viewport.Y
+ViewportX1 := Viewport.X, ViewportY1 := Viewport.Y
 While, GetKeyState("RButton","P")
 {
     MouseGetPos, MouseX, MouseY
-    MouseX -= OffsetX, MouseY -= OffsetY
-    Viewport.X := PositionX - ((MouseX / Width) * Viewport.W)
-    Viewport.Y := PositionY - ((MouseY / Height) * Viewport.H)
+    PositionX := MouseX - OffsetX
+    PositionY := MouseY - OffsetY
+    Viewport.X := ViewportX1 - ((PositionX / Width) * Viewport.W)
+    Viewport.Y := ViewportY1 - ((PositionY / Height) * Viewport.H)
+
+    ;obtain the position of the viewport
+    GuiControlGet, TempPosition, Pos, Display
+    TempPositionW += TempPositionX
+    TempPositionH += TempPositionY
+    If (MouseX < TempPositionX) ;mouse past left edge of viewport
+    {
+        OffsetX += TempPositionW
+        MouseMove, TempPositionW, MouseY, 0
+    }
+    Else If (MouseX > TempPositionW) ;mouse past right edge of viewport
+    {
+        OffsetX -= TempPositionW
+        MouseMove, TempPositionX, MouseY, 0
+    }
+    If (MouseY < TempPositionY) ;mouse past top edge of viewport
+    {
+        OffsetY += TempPositionH
+        MouseMove, MouseX, TempPositionH, 0
+    }
+    Else If (MouseY > TempPositionH) ;mouse past bottom edge of viewport
+    {
+        OffsetY -= TempPositionH
+        MouseMove, MouseX, TempPositionY, 0
+    }
+
     Sleep, 50
 }
 Return
@@ -132,6 +158,7 @@ While, GetKeyState("LButton","P")
     GetMouseCoordinates(Width,Height,MouseX,MouseY)
     If (MouseX != MouseX1 || MouseY != MouseY1)
     {
+        ;determine the currently selected tool
         Gui, Submit, NoHide
         For Index, Tool In Tools
         {
@@ -167,10 +194,15 @@ Return
 
 GetMouseCoordinates(Width,Height,ByRef MouseX,ByRef MouseY)
 {
-    global hControl, Viewport
-    CoordMode, Mouse, Relative
+    global Viewport
+    ;obtain the mouse position
+    CoordMode, Mouse, Client
     MouseGetPos, MouseX, MouseY
-    ControlGetPos, OffsetX, OffsetY,,,, ahk_id %hControl%
+
+    ;obtain the viewport position
+    GuiControlGet, Offset, Pos, Display
+
+    ;calculate the cell the mouse in in
     MouseX -= OffsetX, MouseY -= OffsetY
     MouseX := Floor(Viewport.X + ((MouseX / Width) * Viewport.W))
     MouseY := Floor(Viewport.Y + ((MouseY / Height) * Viewport.H))
@@ -211,13 +243,16 @@ Draw(Grid,Width,Height,Viewport)
     If !DllCall("BitBlt","UPtr",hMemoryDC,"Int",0,"Int",0,"Int",Width,"Int",Height,"UPtr",hMemoryDC,"Int",0,"Int",0,"UInt",0x42) ;BLACKNESS
         throw Exception("Could not transfer pixel data to window device context.")
 
+    ;determine the dimensions of each cell
     BlockW := Width / Viewport.W, BlockH := Height / Viewport.H
     IndexX := Floor(Viewport.X), IndexY := Floor(Viewport.Y)
 
+    ;determine the horizontal position of the first cell
     BlockX := Mod(-Viewport.X,1) * BlockW
     If BlockX > 0
         BlockX -= BlockW
 
+    ;determine the vertical position of the first cell
     BlockY := Mod(-Viewport.Y,1) * BlockH
     If BlockY > 0
         BlockY -= BlockH
@@ -240,6 +275,7 @@ Draw(Grid,Width,Height,Viewport)
     }
     DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalPen,"UPtr") ;deselect the pen
 
+    ;draw cells
     Loop, % Ceil(Viewport.W) + 1
     {
         IndexY1 := IndexY, BlockY1 := BlockY
@@ -252,6 +288,7 @@ Draw(Grid,Width,Height,Viewport)
         IndexX ++, BlockX += BlockW
     }
 
+    ;transfer pixel data to window device context
     If !DllCall("BitBlt","UPtr",hDC,"Int",0,"Int",0,"Int",Width,"Int",Height,"UPtr",hMemoryDC,"Int",0,"Int",0,"UInt",0xCC0020) ;SRCCOPY
         throw Exception("Could not transfer pixel data to window device context.")
 }
