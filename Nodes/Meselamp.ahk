@@ -34,6 +34,7 @@ class Meselamp extends Load
 
         VarSetCapacity(Rectangle,16)
 
+        ;draw rectangle
         NumPut(Round(X + (W * 0.1)),Rectangle,0,"Int")
         NumPut(Round(Y + (H * 0.3)),Rectangle,4,"Int")
         NumPut(Round(X + (W * 0.9)),Rectangle,8,"Int")

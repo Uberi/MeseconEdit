@@ -19,11 +19,13 @@ class Mesecon
         this.Send := 1
         this.Receive := 1
 
+        ;obtain neighbor nodes
         Left := Grid[IndexX - 1,IndexY]
         Right := Grid[IndexX + 1,IndexY]
         Top := Grid[IndexX,IndexY - 1]
         Bottom := Grid[IndexX,IndexY + 1]
 
+        ;obtain total state from neighbors
         this.State := 0
         If Left.Send && Left.State
             this.State += Left.State
@@ -38,6 +40,7 @@ class Mesecon
         {
             OpenList := [], OpenList[IndexX,IndexY] := 1
 
+            ;propagate current state to neighbors
             If Left.Receive
                 Left.ModifyState(this.State - Left.State,OpenList)
             If Right.Receive
@@ -67,6 +70,7 @@ class Mesecon
         global Grid
         OpenList[this.IndexX,this.IndexY] := 1
 
+        ;obtain neighbor nodes
         Left := Grid[this.IndexX - 1,this.IndexY]
         Right := Grid[this.IndexX + 1,this.IndexY]
         Top := Grid[this.IndexX,this.IndexY - 1]
@@ -90,11 +94,13 @@ class Mesecon
         global Grid
         OpenList[this.IndexX,this.IndexY] := 1
 
+        ;obtain neighbor nodes
         Left := Grid[this.IndexX - 1,this.IndexY]
         Right := Grid[this.IndexX + 1,this.IndexY]
         Top := Grid[this.IndexX,this.IndexY - 1]
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
+        ;obtain power source connectivity of neighbor nodes
         Result := 0
         If Left.Send && !OpenList[Left.IndexX,Left.IndexY]
             Result += Left.PowerSourceConnected(OpenList)
@@ -113,12 +119,13 @@ class Mesecon
         this.State += Amount
         OpenList[this.IndexX,this.IndexY] := 1
 
+        ;obtain neightbor nodes
         Left := Grid[this.IndexX - 1,this.IndexY]
         Right := Grid[this.IndexX + 1,this.IndexY]
         Top := Grid[this.IndexX,this.IndexY - 1]
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
-        ;update neighbor nodes
+        ;propagate current state to neighbors
         If Left.Receive && !OpenList[Left.IndexX,Left.IndexY]
             Left.ModifyState(Amount,OpenList)
         If Right.Receive && !OpenList[Right.IndexX,Right.IndexY]
@@ -133,7 +140,7 @@ class Mesecon
     {
         global hMemoryDC, Grid
 
-        ;check for neighbors
+        ;obtain neighbor nodes
         Left := Grid[this.IndexX - 1,this.IndexY], Left := Left.Send || Left.Receive
         Right := Grid[this.IndexX + 1,this.IndexY], Right := Right.Send || Right.Receive
         Top := Grid[this.IndexX,this.IndexY - 1], Top := Top.Send || Top.Receive

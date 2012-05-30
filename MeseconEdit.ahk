@@ -319,11 +319,13 @@ class Power
         this.Send := 1
         this.Receive := 0
 
+        ;obtain neighbor nodes
         Left := Grid[IndexX - 1,IndexY]
         Right := Grid[IndexX + 1,IndexY]
         Top := Grid[IndexX,IndexY - 1]
         Bottom := Grid[IndexX,IndexY + 1]
 
+        ;propagate current state to neighbors
         If Left.Receive
             Left.ModifyState(this.State,[])
         If Right.Receive
@@ -342,6 +344,7 @@ class Power
         Top := Grid[this.IndexX,this.IndexY - 1]
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
+        ;propagate removal of current state to neighbors
         If Left.Receive
             Left.ModifyState(-this.State,[])
         If Right.Receive
@@ -378,11 +381,13 @@ class Load
     {
         global Grid
 
+        ;obtain neighbor nodes
         Left := Grid[this.IndexX - 1,this.IndexY]
         Right := Grid[this.IndexX + 1,this.IndexY]
         Top := Grid[this.IndexX,this.IndexY - 1]
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
+        ;obtain total state from neighbors
         this.State := 0
         If Left.Send && Left.State
             this.State += Left.State

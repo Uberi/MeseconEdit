@@ -50,12 +50,13 @@ class Socket extends Power
         this.State += Amount
         OpenList[this.IndexX,this.IndexY] := 1
 
+        ;obtain neighbor nodes
         Left := Grid[this.IndexX - 1,this.IndexY]
         Right := Grid[this.IndexX + 1,this.IndexY]
         Top := Grid[this.IndexX,this.IndexY - 1]
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
-        ;update neighbor nodes
+        ;propagate current state to neighbors
         If Left.Receive && !OpenList[Left.IndexX,Left.IndexY]
             Left.ModifyState(Amount,OpenList)
         If Right.Receive && !OpenList[Right.IndexX,Right.IndexY]
