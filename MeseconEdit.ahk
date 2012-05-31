@@ -1,6 +1,5 @@
 #NoEnv
 
-;wip: only redraw when needed
 ;wip: wrap controls on window resize
 ;wip: file saving/loading and new nodes
 
@@ -380,6 +379,7 @@ class Load
     Recalculate(OpenList)
     {
         global Grid
+        OpenList[this.IndexX,this.IndexY] := 1
 
         ;obtain neighbor nodes
         Left := Grid[this.IndexX - 1,this.IndexY]
@@ -389,13 +389,13 @@ class Load
 
         ;obtain total state from neighbors
         this.State := 0
-        If Left.Send && Left.State
+        If Left.Send && Left.State && !OpenList[Left.IndexX,Left.IndexY]
             this.State += Left.State
-        If Right.Send && Right.State
+        If Right.Send && Right.State && !OpenList[Right.IndexX,Right.IndexY]
             this.State += Right.State
-        If Top.Send && Top.State
+        If Top.Send && Top.State && !OpenList[Top.IndexX,Top.IndexY]
             this.State += Top.State
-        If Bottom.Send && Bottom.State
+        If Bottom.Send && Bottom.State && !OpenList[Bottom.IndexX,Bottom.IndexY]
             this.State += Bottom.State
     }
 
