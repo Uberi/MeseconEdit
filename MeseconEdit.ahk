@@ -1,5 +1,10 @@
 #NoEnv
 
+;wip: multiple simultaneous viewports with independent views
+;wip: separate tools from node additions and remove the tools array
+;wip: undo/redo
+;wip: component count in status bar - nodes used in selection, in total
+;wip: rectangular selection and selection filling/moving/copying/pasting
 ;wip: wrap controls on window resize
 ;wip: file saving/loading and new nodes
 
@@ -133,43 +138,78 @@ Return
 
 class NodeActions
 {
-    Add(Grid,MouseX,MouseY,Tool)
+    Add(Grid,Tool)
     {
-        Grid[MouseX,MouseY] := ""
-        Grid[MouseX,MouseY] := new Tool.Class(MouseX,MouseY)
+        global Width, Height
+        MouseX1 := ~0, MouseY1 := ~0
+        While, GetKeyState("LButton","P")
+        {
+            GetMouseCoordinates(Width,Height,MouseX,MouseY)
+            If (MouseX != MouseX1 || MouseY != MouseY1)
+            {
+                Grid[MouseX,MouseY] := ""
+                Grid[MouseX,MouseY] := new Tool.Class(MouseX,MouseY)
+                MouseX1 := MouseX, MouseY1 := MouseY
+            }
+            Sleep, 1
+        }
     }
 
-    Remove(Grid,MouseX,MouseY,Tool)
+    Remove(Grid,Tool)
     {
-        If Grid.HasKey(MouseX) && Grid[MouseX].HasKey(MouseY)
+        global Width, Height
+        MouseX1 := ~0, MouseY1 := ~0
+        While, GetKeyState("LButton","P")
         {
-            Grid[MouseX].Remove(MouseY,"")
-            If Grid[MouseX].MaxIndex() = ""
-                Grid.Remove(MouseX,"")
+            GetMouseCoordinates(Width,Height,MouseX,MouseY)
+            If (MouseX != MouseX1 || MouseY != MouseY1)
+            {
+                If Grid.HasKey(MouseX) && Grid[MouseX].HasKey(MouseY)
+                {
+                    Grid[MouseX].Remove(MouseY,"")
+                    If Grid[MouseX].MaxIndex() = ""
+                        Grid.Remove(MouseX,"")
+                }
+                MouseX1 := MouseX, MouseY1 := MouseY
+            }
+            Sleep, 1
+        }
+    }
+
+    Select(Grid,Tool)
+    {
+        global hMemoryDC, Width, Height
+        static hBrush := DllCall("CreateSolidBrush","UInt",0x0000FF,"UPtr")
+        MouseX1 := ~0, MouseY1 := ~0
+        VarSetCapacity(Rectangle,16)
+        While, GetKeyState("LButton","P")
+        {
+            GetMouseCoordinates(Width,Height,MouseX,MouseY)
+            If (MouseX != MouseX1 || MouseY != MouseY1)
+            {
+                ;draw rectangle
+                NumPut(Round(X),Rectangle,0,"Int")
+                NumPut(Round(Y),Rectangle,4,"Int")
+                NumPut(Round(X + W),Rectangle,8,"Int")
+                NumPut(Round(Y + H),Rectangle,12,"Int")
+                DllCall("DrawRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
+
+                MouseX1 := MouseX, MouseY1 := MouseY
+            }
+            Sleep, 1
         }
     }
 }
 
 DisplayClick:
-MouseX1 := ~0, MouseY1 := ~0
-While, GetKeyState("LButton","P")
+Gui, Submit, NoHide
+For Index, Tool In Tools
 {
-    GetMouseCoordinates(Width,Height,MouseX,MouseY)
-    If (MouseX != MouseX1 || MouseY != MouseY1)
+    If Tool%Index%
     {
-        ;determine the currently selected tool
-        Gui, Submit, NoHide
-        For Index, Tool In Tools
-        {
-            If Tool%Index%
-            {
-                Tool.Handler(Grid,MouseX,MouseY,Tool)
-                Break
-            }
-        }
-        MouseX1 := MouseX, MouseY1 := MouseY
+        Tool.Handler(Grid,Tool)
+        Break
     }
-    Sleep, 1
 }
 Return
 

@@ -2,19 +2,12 @@
 
 class Mesecon
 {
-    static Count := 0
+    static hOffBrush := DllCall("CreateSolidBrush","UInt",0x008888,"UPtr")
+    static hOnBrush := DllCall("CreateSolidBrush","UInt",0x00FFFF,"UPtr")
 
     __New(IndexX,IndexY)
     {
-        global hMemoryDC, Grid
-
-        If this.base.Count = 0 ;first mesecon instance
-        {
-            this.base.hOffBrush := DllCall("CreateSolidBrush","UInt",0x008888,"UPtr")
-            this.base.hOnBrush := DllCall("CreateSolidBrush","UInt",0x00FFFF,"UPtr")
-        }
-        this.base.Count ++
-
+        global Grid
         this.IndexX := IndexX, this.IndexY := IndexY
         this.Send := 1
         this.Receive := 1
@@ -55,14 +48,6 @@ class Mesecon
     __Delete()
     {
         this.Recalculate([])
-
-        this.base.Count --
-        If this.base.Count = 0 ;last mesecon instance
-        {
-            DllCall("DeleteObject","UPtr",this.base.hPen)
-            DllCall("DeleteObject","UPtr",this.base.hOnBrush)
-            DllCall("DeleteObject","UPtr",this.base.hOffBrush)
-        }
     }
 
     Recalculate(OpenList)

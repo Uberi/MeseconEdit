@@ -2,30 +2,8 @@
 
 class Meselamp extends Load
 {
-    static Count := 0
-
-    __New(IndexX,IndexY)
-    {
-        If this.base.Count = 0 ;first mesecon instance
-        {
-            this.base.hOffBrush := DllCall("CreateSolidBrush","UInt",0x777777,"UPtr")
-            this.base.hOnBrush := DllCall("CreateSolidBrush","UInt",0xFFFFFF,"UPtr")
-        }
-        this.base.Count ++
-
-        base.__New(IndexX,IndexY)
-    }
-
-    __Delete()
-    {
-        this.base.Count --
-        If this.base.Count = 0 ;last mesecon instance
-        {
-            DllCall("DeleteObject","UPtr",this.base.hPen)
-            DllCall("DeleteObject","UPtr",this.base.hOnBrush)
-            DllCall("DeleteObject","UPtr",this.base.hOffBrush)
-        }
-    }
+    static hOffBrush := DllCall("CreateSolidBrush","UInt",0x777777,"UPtr")
+    static hOnBrush := DllCall("CreateSolidBrush","UInt",0xFFFFFF,"UPtr")
 
     Draw(X,Y,W,H)
     {

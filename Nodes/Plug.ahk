@@ -2,32 +2,8 @@
 
 class Plug extends Load
 {
-    static Count := 0
-
-    __New(IndexX,IndexY)
-    {
-        global Grid
-
-        If this.base.Count = 0 ;first mesecon instance
-        {
-            this.base.hPen := DllCall("CreatePen","Int",5,"Int",0,"UInt",0,"UPtr") ;PS_NULL
-            this.base.hBrush := DllCall("CreateSolidBrush","UInt",0x3333AA,"UPtr")
-        }
-        this.base.Count ++
-
-        base.__New(IndexX,IndexY)
-    }
-
-    __Delete()
-    {
-        this.base.Count --
-        If this.base.Count = 0 ;last mesecon instance
-        {
-            DllCall("DeleteObject","UPtr",this.base.hPen)
-            DllCall("DeleteObject","UPtr",this.base.hOnBrush)
-            DllCall("DeleteObject","UPtr",this.base.hOffBrush)
-        }
-    }
+    static hPen := DllCall("CreatePen","Int",5,"Int",0,"UInt",0,"UPtr") ;PS_NULL
+    static hBrush := DllCall("CreateSolidBrush","UInt",0x3333AA,"UPtr")
 
     ModifyState(Amount,OpenList)
     {
