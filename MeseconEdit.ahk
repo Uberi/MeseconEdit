@@ -1,11 +1,10 @@
 #NoEnv
 
 ;wip: multiple simultaneous viewports with independent views
-;wip: separate tools from node additions and remove the tools array
+;wip: separate tools from node additions and remove the Tools array, have Add tool and cotext sensitive listbox/listview for nodes to add
 ;wip: undo/redo
 ;wip: component count in status bar - nodes used in selection, in total
 ;wip: rectangular selection and selection filling/moving/copying/pasting
-;wip: wrap controls on window resize
 ;wip: file saving/loading and new nodes
 
 /*
@@ -34,13 +33,9 @@ Width := 800
 Height := 600
 
 Tools := []
-Tools.Insert(Object("Name","&Mesecon",    "Handler",NodeActions.Add,"Class",Mesecon))
-Tools.Insert(Object("Name","&Empty",      "Handler",NodeActions.Remove))
-Tools.Insert(Object("Name","&Power Plant","Handler",NodeActions.Add,"Class",PowerPlant))
-Tools.Insert(Object("Name","Mese&lamp",   "Handler",NodeActions.Add,"Class",Meselamp))
-Tools.Insert(Object("Name","Pl&ug",       "Handler",NodeActions.Add,"Class",Plug))
-Tools.Insert(Object("Name","&Socket",     "Handler",NodeActions.Add,"Class",Socket))
-Tools.Insert(Object("Name","&Inverter",   "Handler",NodeActions.Add,"Class",Inverter))
+Tools.Insert(Object("Name","Add",         "Class",ToolActions.Add))
+Tools.Insert(Object("Name","Remove",      "Class",ToolActions.Remove))
+Tools.Insert(Object("Name","Select",      "Class",ToolActions.Select))
 
 Gui, Add, Text, vDisplay gDisplayClick hwndhControl
 
@@ -49,8 +44,13 @@ Viewport := Object("X",-14.5,"Y",-14.5,"W",30,"H",30)
 InitializeViewport(hControl,Width,Height)
 
 For Index, Tool In Tools
-    Gui, Add, Radio, vTool%Index%, % Tool.Name
+    Gui, Add, Radio, vTool%Index% gSelectTool, % Tool.Name
 GuiControl,, Tool1, 1
+
+Gui, Add, ListBox, vSubtools
+Tools[1].Class.Select()
+
+;wip: add options
 
 Gui, +Resize +MinSize600x400
 Gui, Show, w800 h600, MeseconEdit
@@ -59,6 +59,112 @@ Gosub, Draw
 SetTimer, Draw, 50
 Return
 
+class ToolActions
+{
+    class Add
+    {
+        static Nodes := Object("Mesecon",    Mesecon
+                              ,"Power Plant",PowerPlant
+                              ,"Meselamp",   Meselamp
+                              ,"Plug",       Plug
+                              ,"Socket",     Socket
+                              ,"Inverter",   Inverter)
+        Select()
+        {
+            Subtools := ""
+            For ToolName In this.Nodes
+                SubTools .= "|" . ToolName
+            GuiControl,, Subtools, %SubTools%
+            GuiControl, Choose, Subtools, 1
+        }
+
+        Activate(Grid)
+        {
+            global Width, Height
+            MouseX1 := ~0, MouseY1 := ~0
+            While, GetKeyState("LButton","P")
+            {
+                GetMouseCoordinates(Width,Height,MouseX,MouseY)
+                If (MouseX != MouseX1 || MouseY != MouseY1)
+                {
+                    GuiControlGet, NodeName,, Subtools
+
+                    Grid[MouseX,MouseY] := ""
+                    NodeClass := this.Nodes[NodeName]
+                    Grid[MouseX,MouseY] := new NodeClass(MouseX,MouseY)
+
+                    MouseX1 := MouseX, MouseY1 := MouseY
+                }
+                Sleep, 1
+            }
+        }
+    }
+
+    class Remove
+    {
+        Select()
+        {
+            GuiControl,, Subtools, |Selection|Connected
+            GuiControl, Choose, Subtools, 1
+        }
+
+        Activate(Grid)
+        {
+            global Width, Height
+            MouseX1 := ~0, MouseY1 := ~0
+            While, GetKeyState("LButton","P")
+            {
+                GetMouseCoordinates(Width,Height,MouseX,MouseY)
+                If (MouseX != MouseX1 || MouseY != MouseY1)
+                {
+                    If Grid.HasKey(MouseX) && Grid[MouseX].HasKey(MouseY)
+                    {
+                        Grid[MouseX].Remove(MouseY,"")
+                        If Grid[MouseX].MaxIndex() = ""
+                            Grid.Remove(MouseX,"")
+                    }
+
+                    MouseX1 := MouseX, MouseY1 := MouseY
+                }
+                Sleep, 1
+            }
+        }
+    }
+
+    class Select
+    {
+        Select()
+        {
+            GuiControl,, Subtools, |Area|Extend|Connected
+            GuiControl, Choose, Subtools, 1
+        }
+
+        Activate(Grid)
+        {
+            global hMemoryDC, Width, Height
+            static hBrush := DllCall("CreateSolidBrush","UInt",0x0000FF,"UPtr")
+            MouseX1 := ~0, MouseY1 := ~0
+            VarSetCapacity(Rectangle,16)
+            While, GetKeyState("LButton","P")
+            {
+                GetMouseCoordinates(Width,Height,MouseX,MouseY)
+                If (MouseX != MouseX1 || MouseY != MouseY1)
+                {
+                    ;draw rectangle
+                    NumPut(Round(X),Rectangle,0,"Int")
+                    NumPut(Round(Y),Rectangle,4,"Int")
+                    NumPut(Round(X + W),Rectangle,8,"Int")
+                    NumPut(Round(Y + H),Rectangle,12,"Int")
+                    DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
+
+                    MouseX1 := MouseX, MouseY1 := MouseY
+                }
+                Sleep, 1
+            }
+        }
+    }
+}
+
 GuiClose:
 SetTimer, Draw, Off
 UninitializeViewport(hControl)
@@ -66,17 +172,25 @@ ExitApp
 
 GuiSize:
 Critical
-Width := A_GuiWidth - 20, Height := A_GuiHeight - 50
+Width := A_GuiWidth - 110, Height := A_GuiHeight - 20
 GuiControl, Move, Display, x10 y10 w%Width% h%Height%
 SizeWindow(Width,Height)
 Viewport.Y += Viewport.H / 2
 Viewport.H := (Height / Width) * Viewport.W
 Viewport.Y -= Viewport.H / 2
 
+Temp1 := 10
 For Index In Tools
-    GuiControl, Move, Tool%Index%, % "x" . ((Index * 100) - 90) . " y" . (A_GuiHeight - 30) . " w100 h20"
+    GuiControl, Move, Tool%Index%, % "x" . (A_GuiWidth - 90) . " y" . Temp1 . " w80 h20", Temp1 += 20
+
+Temp1 += 20
+GuiControl, Move, Subtools, % "x" . (A_GuiWidth - 90) . " y" . Temp1 . " w80 h200"
 
 Sleep, 10
+Return
+
+SelectTool:
+Tools[SubStr(A_GuiControl,5)].Class.Select()
 Return
 
 Draw:
@@ -99,14 +213,12 @@ While, GetKeyState("RButton","P")
 
     ;obtain the position of the viewport
     GuiControlGet, TempPosition, Pos, Display
-    TempPositionW += TempPositionX
-    TempPositionH += TempPositionY
     If (MouseX < TempPositionX) ;mouse past left edge of viewport
     {
         OffsetX += TempPositionW
-        MouseMove, TempPositionW, MouseY, 0
+        MouseMove, TempPositionX + TempPositionW, MouseY, 0
     }
-    Else If (MouseX > TempPositionW) ;mouse past right edge of viewport
+    Else If (MouseX > TempPositionX + TempPositionW) ;mouse past right edge of viewport
     {
         OffsetX -= TempPositionW
         MouseMove, TempPositionX, MouseY, 0
@@ -114,9 +226,9 @@ While, GetKeyState("RButton","P")
     If (MouseY < TempPositionY) ;mouse past top edge of viewport
     {
         OffsetY += TempPositionH
-        MouseMove, MouseX, TempPositionH, 0
+        MouseMove, MouseX, TempPositionY + TempPositionH, 0
     }
-    Else If (MouseY > TempPositionH) ;mouse past bottom edge of viewport
+    Else If (MouseY > TempPositionY + TempPositionH) ;mouse past bottom edge of viewport
     {
         OffsetY -= TempPositionH
         MouseMove, MouseX, TempPositionY, 0
@@ -136,78 +248,13 @@ While, GetKeyState("Space","P")
 }
 Return
 
-class NodeActions
-{
-    Add(Grid,Tool)
-    {
-        global Width, Height
-        MouseX1 := ~0, MouseY1 := ~0
-        While, GetKeyState("LButton","P")
-        {
-            GetMouseCoordinates(Width,Height,MouseX,MouseY)
-            If (MouseX != MouseX1 || MouseY != MouseY1)
-            {
-                Grid[MouseX,MouseY] := ""
-                Grid[MouseX,MouseY] := new Tool.Class(MouseX,MouseY)
-                MouseX1 := MouseX, MouseY1 := MouseY
-            }
-            Sleep, 1
-        }
-    }
-
-    Remove(Grid,Tool)
-    {
-        global Width, Height
-        MouseX1 := ~0, MouseY1 := ~0
-        While, GetKeyState("LButton","P")
-        {
-            GetMouseCoordinates(Width,Height,MouseX,MouseY)
-            If (MouseX != MouseX1 || MouseY != MouseY1)
-            {
-                If Grid.HasKey(MouseX) && Grid[MouseX].HasKey(MouseY)
-                {
-                    Grid[MouseX].Remove(MouseY,"")
-                    If Grid[MouseX].MaxIndex() = ""
-                        Grid.Remove(MouseX,"")
-                }
-                MouseX1 := MouseX, MouseY1 := MouseY
-            }
-            Sleep, 1
-        }
-    }
-
-    Select(Grid,Tool)
-    {
-        global hMemoryDC, Width, Height
-        static hBrush := DllCall("CreateSolidBrush","UInt",0x0000FF,"UPtr")
-        MouseX1 := ~0, MouseY1 := ~0
-        VarSetCapacity(Rectangle,16)
-        While, GetKeyState("LButton","P")
-        {
-            GetMouseCoordinates(Width,Height,MouseX,MouseY)
-            If (MouseX != MouseX1 || MouseY != MouseY1)
-            {
-                ;draw rectangle
-                NumPut(Round(X),Rectangle,0,"Int")
-                NumPut(Round(Y),Rectangle,4,"Int")
-                NumPut(Round(X + W),Rectangle,8,"Int")
-                NumPut(Round(Y + H),Rectangle,12,"Int")
-                DllCall("DrawRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
-
-                MouseX1 := MouseX, MouseY1 := MouseY
-            }
-            Sleep, 1
-        }
-    }
-}
-
 DisplayClick:
 Gui, Submit, NoHide
 For Index, Tool In Tools
 {
     If Tool%Index%
     {
-        Tool.Handler(Grid,Tool)
+        Tool.Class.Activate(Grid)
         Break
     }
 }
