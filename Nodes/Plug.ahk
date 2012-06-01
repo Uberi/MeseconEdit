@@ -5,10 +5,23 @@ class Plug extends Load
     static hPen := DllCall("CreatePen","Int",5,"Int",0,"UInt",0,"UPtr") ;PS_NULL
     static hBrush := DllCall("CreateSolidBrush","UInt",0x3333AA,"UPtr")
 
+    Recalculate(OpenList)
+    {
+        global Grid
+        base.Recalculate(OpenList)
+        this.UpdatePlug(OpenList)
+    }
+
     ModifyState(Amount,OpenList)
     {
         global Grid
         base.ModifyState(Amount,OpenList)
+        this.UpdatePlug(OpenList)
+    }
+
+    UpdatePlug(OpenList)
+    {
+        global Grid
         If this.State ;plug on
         {
             For Index, Cell In [Grid[this.IndexX - 2,this.IndexY]
