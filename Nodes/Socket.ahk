@@ -2,7 +2,7 @@
 
 class Socket extends Power
 {
-    static hPen := DllCall("CreatePen","Int",5,"Int",0,"UInt",0,"UPtr") ;PS_NULL
+    static hPen := DllCall("GetStockObject","Int",8,"UPtr") ;NULL_PEN
     static hBrush := DllCall("CreateSolidBrush","UInt",0xAAAAAA,"UPtr")
 
     __New(IndexX,IndexY)

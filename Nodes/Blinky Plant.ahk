@@ -2,6 +2,7 @@
 
 class BlinkyPlant extends Power
 {
+    static hPen := DllCall("GetStockObject","Int",8,"UPtr") ;NULL_PEN
     static hOffBrush := DllCall("CreateSolidBrush","UInt",0x0000BB,"UPtr")
     static hOnBrush := DllCall("CreateSolidBrush","UInt",0x0088FF,"UPtr")
     static BlinkyPlantArray := BlinkyPlant.SetBlinkyPlantTimer()
