@@ -5,7 +5,6 @@
 ;wip: component count in status bar - nodes used in selection, in total
 ;wip: rectangular selection and selection filling/moving/copying/pasting
 ;wip: file saving/loading and new nodes
-;wip: remember last selected subtool
 
 /*
 Copyright 2012 Anthony Zhang <azhang9@gmail.com>
@@ -48,7 +47,8 @@ For Index, Tool In Tools
 GuiControl,, Tool1, 1
 
 Gui, Add, ListBox, vSubtools
-Tools[1].Class.Select()
+CurrentTool := Tools[1]
+CurrentTool.Class.Select()
 
 ;wip: add options
 
@@ -63,6 +63,7 @@ class ToolActions
 {
     class Draw
     {
+        static Subtool := 1
         static Nodes := Object("Mesecon",     Mesecon
                               ,"Blinky Plant",BlinkyPlant
                               ,"Power Plant", PowerPlant
@@ -70,13 +71,14 @@ class ToolActions
                               ,"Plug",        Plug
                               ,"Socket",      Socket
                               ,"Inverter",    Inverter)
+
         Select()
         {
             Subtools := ""
             For ToolName In this.Nodes
                 SubTools .= "|" . ToolName
             GuiControl,, Subtools, %SubTools%
-            GuiControl, Choose, Subtools, 1
+            GuiControl, Choose, Subtools, % this.SubTool
         }
 
         Activate(Grid)
@@ -103,10 +105,12 @@ class ToolActions
 
     class Remove
     {
+        static Subtool := 1
+
         Select()
         {
             GuiControl,, Subtools, |Selection|Connected
-            GuiControl, Choose, Subtools, 1
+            GuiControl, Choose, Subtools, % this.Subtool
         }
 
         Activate(Grid)
@@ -134,10 +138,12 @@ class ToolActions
 
     class Select
     {
+        static Subtool := 1
+
         Select()
         {
             GuiControl,, Subtools, |Area|Extend|Connected
-            GuiControl, Choose, Subtools, 1
+            GuiControl, Choose, Subtools, % this.SubTool
         }
 
         Activate(Grid)
@@ -194,7 +200,13 @@ Sleep, 10
 Return
 
 SelectTool:
-Tools[SubStr(A_GuiControl,5)].Class.Select()
+;store the index of the previously selected subtool
+Gui, +LastFound
+SendMessage, 0x188, 0, 0, ListBox1 ;LB_GETCURSEL
+CurrentTool.Class.Subtool := ErrorLevel + 1
+
+CurrentTool := Tools[SubStr(A_GuiControl,5)]
+CurrentTool.Class.Select()
 Return
 
 Draw:
