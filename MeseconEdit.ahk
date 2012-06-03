@@ -173,6 +173,9 @@ ExitApp
 
 GuiSize:
 Critical
+If A_EventInfo = 1 ;window minimised
+    Return
+
 Width := A_GuiWidth - 110, Height := A_GuiHeight - 20
 GuiControl, Move, Display, x10 y10 w%Width% h%Height%
 SizeWindow(Width,Height)
