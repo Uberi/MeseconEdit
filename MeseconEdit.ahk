@@ -33,9 +33,9 @@ Width := 800
 Height := 600
 
 Tools := []
-Tools.Insert(Object("Name","&Draw",         "Class",ToolActions.Draw))
-Tools.Insert(Object("Name","&Remove",      "Class",ToolActions.Remove))
-Tools.Insert(Object("Name","&Select",      "Class",ToolActions.Select))
+Tools.Insert(Object("Name","&Draw",  "Class",ToolActions.Draw))
+Tools.Insert(Object("Name","&Remove","Class",ToolActions.Remove))
+Tools.Insert(Object("Name","&Select","Class",ToolActions.Select))
 
 Gui, Add, Text, vDisplay gDisplayClick hwndhControl
 
@@ -63,12 +63,13 @@ class ToolActions
 {
     class Draw
     {
-        static Nodes := Object("Mesecon",    Mesecon
-                              ,"Power Plant",PowerPlant
-                              ,"Meselamp",   Meselamp
-                              ,"Plug",       Plug
-                              ,"Socket",     Socket
-                              ,"Inverter",   Inverter)
+        static Nodes := Object("Mesecon",     Mesecon
+                              ,"Blinky Plant",BlinkyPlant
+                              ,"Power Plant", PowerPlant
+                              ,"Meselamp",    Meselamp
+                              ,"Plug",        Plug
+                              ,"Socket",      Socket
+                              ,"Inverter",    Inverter)
         Select()
         {
             Subtools := ""
@@ -441,6 +442,29 @@ class Power
             Bottom.ModifyState(-this.State,[])
     }
 
+    ModifyState(Amount,OpenList)
+    {
+        global Grid
+        this.State += Amount
+        OpenList[this.IndexX,this.IndexY] := 1
+
+        ;obtain neighbor nodes
+        Left := Grid[this.IndexX - 1,this.IndexY]
+        Right := Grid[this.IndexX + 1,this.IndexY]
+        Top := Grid[this.IndexX,this.IndexY - 1]
+        Bottom := Grid[this.IndexX,this.IndexY + 1]
+
+        ;propagate current state to neighbors
+        If Left.Receive && !OpenList[Left.IndexX,Left.IndexY]
+            Left.ModifyState(Amount,OpenList)
+        If Right.Receive && !OpenList[Right.IndexX,Right.IndexY]
+            Right.ModifyState(Amount,OpenList)
+        If Top.Receive && !OpenList[Top.IndexX,Top.IndexY]
+            Top.ModifyState(Amount,OpenList)
+        If Bottom.Receive && !OpenList[Bottom.IndexX,Bottom.IndexY]
+            Bottom.ModifyState(Amount,OpenList)
+    }
+
     PowerSourceConnected()
     {
         Return, this.State
@@ -499,6 +523,7 @@ class Load
 
 #Include %A_ScriptDir%\Nodes\Mesecon.ahk
 #Include %A_ScriptDir%\Nodes\Power Plant.ahk
+#Include %A_ScriptDir%\Nodes\Blinky Plant.ahk
 #Include %A_ScriptDir%\Nodes\Meselamp.ahk
 #Include %A_ScriptDir%\Nodes\Plug.ahk
 #Include %A_ScriptDir%\Nodes\Socket.ahk
