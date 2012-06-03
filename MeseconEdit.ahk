@@ -1,11 +1,11 @@
 #NoEnv
 
 ;wip: multiple simultaneous viewports with independent views
-;wip: separate tools from node additions and remove the Tools array, have Add tool and cotext sensitive listbox/listview for nodes to add
 ;wip: undo/redo
 ;wip: component count in status bar - nodes used in selection, in total
 ;wip: rectangular selection and selection filling/moving/copying/pasting
 ;wip: file saving/loading and new nodes
+;wip: remember last selected subtool
 
 /*
 Copyright 2012 Anthony Zhang <azhang9@gmail.com>
@@ -33,9 +33,9 @@ Width := 800
 Height := 600
 
 Tools := []
-Tools.Insert(Object("Name","Add",         "Class",ToolActions.Add))
-Tools.Insert(Object("Name","Remove",      "Class",ToolActions.Remove))
-Tools.Insert(Object("Name","Select",      "Class",ToolActions.Select))
+Tools.Insert(Object("Name","&Draw",         "Class",ToolActions.Draw))
+Tools.Insert(Object("Name","&Remove",      "Class",ToolActions.Remove))
+Tools.Insert(Object("Name","&Select",      "Class",ToolActions.Select))
 
 Gui, Add, Text, vDisplay gDisplayClick hwndhControl
 
@@ -61,7 +61,7 @@ Return
 
 class ToolActions
 {
-    class Add
+    class Draw
     {
         static Nodes := Object("Mesecon",    Mesecon
                               ,"Power Plant",PowerPlant
@@ -95,7 +95,7 @@ class ToolActions
 
                     MouseX1 := MouseX, MouseY1 := MouseY
                 }
-                Sleep, 1
+                Sleep, 0
             }
         }
     }
@@ -126,7 +126,7 @@ class ToolActions
 
                     MouseX1 := MouseX, MouseY1 := MouseY
                 }
-                Sleep, 1
+                Sleep, 0
             }
         }
     }
