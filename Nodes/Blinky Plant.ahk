@@ -1,7 +1,5 @@
 #NoEnv
 
-#Include %A_ScriptDir%\Basis.ahk
-
 class BlinkyPlant extends Power
 {
     static hOffBrush := DllCall("CreateSolidBrush","UInt",0x0000BB,"UPtr")
