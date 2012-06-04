@@ -9,15 +9,19 @@ class Socket extends Power
     {
         global Grid
         this.State := 0
-        For Index, Cell In [Grid[IndexX - 2,IndexY]
-                           ,Grid[IndexX + 2,IndexY]
-                           ,Grid[IndexX,IndexY - 2]
-                           ,Grid[IndexX,IndexY + 2]]
-        { ;wip: check for blank node between plug and socket/inverter
-            If Cell.__Class = "Plug" && Cell.State
+        For Index, Offset In [[-2,0]
+                             ,[2,0]
+                             ,[0,-2]
+                             ,[0,2]]
+        {
+            If !Grid[IndexX + (Offset[1] >> 1),IndexY + (Offset[2] >> 1)] ;node between the two nodes is empty
             {
-                this.State := 1
-                Break
+                Cell := Grid[IndexX + Offset[1],IndexY + Offset[2]]
+                If Cell.__Class = "Plug" && Cell.State
+                {
+                    this.State := 1
+                    Break
+                }
             }
         }
 

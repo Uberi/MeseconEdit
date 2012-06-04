@@ -24,28 +24,36 @@ class Plug extends Load
         global Grid
         If this.State ;plug on
         {
-            For Index, Cell In [Grid[this.IndexX - 2,this.IndexY]
-                               ,Grid[this.IndexX + 2,this.IndexY]
-                               ,Grid[this.IndexX,this.IndexY - 2]
-                               ,Grid[this.IndexX,this.IndexY + 2]]
-            { ;wip: check for blank node between plug and socket/inverter
-                If Cell.__Class = "Socket" && !Cell.State
-                    Cell.ModifyState(1,OpenList)
-                If Cell.__Class = "Inverter" && Cell.State
-                    Cell.ModifyState(-1,OpenList)
+            For Index, Offset In [[-2,0]
+                                 ,[2,0]
+                                 ,[0,-2]
+                                 ,[0,2]]
+            {
+                If !Grid[this.IndexX + (Offset[1] >> 1),this.IndexY + (Offset[2] >> 1)] ;node between the two nodes is empty
+                {
+                    Cell := Grid[this.IndexX + Offset[1],this.IndexY + Offset[2]]
+                    If Cell.__Class = "Socket" && !Cell.State
+                        Cell.ModifyState(1,OpenList)
+                    If Cell.__Class = "Inverter" && Cell.State
+                        Cell.ModifyState(-1,OpenList)
+                }
             }
         }
         Else ;plug off
         {
-            For Index, Cell In [Grid[this.IndexX - 2,this.IndexY]
-                               ,Grid[this.IndexX + 2,this.IndexY]
-                               ,Grid[this.IndexX,this.IndexY - 2]
-                               ,Grid[this.IndexX,this.IndexY + 2]]
+            For Index, Offset In [[-2,0]
+                                 ,[2,0]
+                                 ,[0,-2]
+                                 ,[0,2]]
             {
-                If Cell.__Class = "Socket" && Cell.State
-                    Cell.ModifyState(-1,OpenList)
-                If Cell.__Class = "Inverter" && !Cell.State
-                    Cell.ModifyState(1,OpenList)
+                If !Grid[this.IndexX + (Offset[1] >> 1),this.IndexY + (Offset[2] >> 1)] ;node between the two nodes is empty
+                {
+                    Cell := Grid[this.IndexX + Offset[1],this.IndexY + Offset[2]]
+                    If Cell.__Class = "Socket" && Cell.State
+                        Cell.ModifyState(-1,OpenList)
+                    If Cell.__Class = "Inverter" && !Cell.State
+                        Cell.ModifyState(1,OpenList)
+                }
             }
         }
     }
