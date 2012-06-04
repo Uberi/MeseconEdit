@@ -1,4 +1,22 @@
-class Power
+class Basis
+{
+    Punch()
+    {
+        
+    }
+
+    WalkOver()
+    {
+        
+    }
+
+    Draw(X,Y,W,H)
+    {
+        
+    }
+}
+
+class Power extends Basis
 {
     __New(IndexX,IndexY)
     {
@@ -71,14 +89,9 @@ class Power
     {
         Return, this.State
     }
-
-    Draw(X,Y,W,H)
-    {
-        
-    }
 }
 
-class Load
+class Load extends Basis
 {
     __New(IndexX,IndexY)
     {

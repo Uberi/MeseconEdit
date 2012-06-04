@@ -32,9 +32,10 @@ Width := 800
 Height := 600
 
 Tools := []
-Tools.Insert(Object("Name","&Draw",  "Class",ToolActions.Draw))
-Tools.Insert(Object("Name","&Remove","Class",ToolActions.Remove))
-Tools.Insert(Object("Name","&Select","Class",ToolActions.Select))
+Tools.Insert(Object("Name","&Draw",   "Class",ToolActions.Draw))
+Tools.Insert(Object("Name","&Remove", "Class",ToolActions.Remove))
+Tools.Insert(Object("Name","&Select", "Class",ToolActions.Select))
+Tools.Insert(Object("Name","&Actuate","Class",ToolActions.Actuate))
 
 Gui, Add, Text, vDisplay gDisplayClick hwndhControl
 
@@ -191,6 +192,30 @@ class ToolActions
                 ;}
                 Sleep, 1
             }
+        }
+    }
+
+    class Actuate
+    {
+        static Subtool := 1
+
+        Select()
+        {
+            GuiControl,, Subtools, |Hit|Walk Over
+            GuiControl, Choose, Subtools, % this.SubTool
+        }
+
+        Activate(Grid)
+        {
+            global Width, Height
+            GetMouseCoordinates(Width,Height,MouseX,MouseY)
+            Cell := Grid[MouseX,MouseY]
+
+            GuiControlGet, Action,, Subtools
+            If (Action = "Hit")
+                Cell.Punch()
+            Else If (Action = "Walk Over")
+                Cell.WalkOver()
         }
     }
 }
