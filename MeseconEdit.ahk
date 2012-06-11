@@ -53,7 +53,7 @@ CurrentTool.Class.Select()
 
 ;wip: add options
 
-Gui, +Resize +MinSize600x400
+Gui, +Resize +MinSize400x320
 Gui, Show, w800 h600, MeseconEdit
 
 Gosub, Draw
@@ -345,6 +345,31 @@ If Viewport.W < 80
     Viewport.W *= 1.2, Viewport.H *= 1.2
 }
 Return
+
+Serialize(Grid)
+{
+    Result := ""
+    For IndexX, Column In Grid
+    {
+        For IndexY, Node In Column
+            Result .= IndexX . "`t" . IndexY . "`t" . Node.__Class . "`t" . Node.Serialize() . "`n"
+    }
+    Return, Result
+}
+
+Deserialize(Value)
+{
+    local Grid, Field0
+    Grid := []
+    StringReplace, Value, Value, `r,, All
+    Value := Trim(Value,"`n")
+    Loop, Parse, Value, `n
+    {
+        StringSplit, Field, A_LoopField, %A_Tab% ;wip: serialized data cannot contain tabs or newlines
+        Grid[Field1,Field2] := new %Field3%(Field1,Field2)
+    }
+    Return, Grid
+}
 
 GetMouseCoordinates(Width,Height,ByRef MouseX,ByRef MouseY)
 {

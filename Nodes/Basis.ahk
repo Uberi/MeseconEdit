@@ -14,6 +14,16 @@ class Basis
     {
         
     }
+
+    Serialize()
+    {
+        
+    }
+
+    Deserialize(Value)
+    {
+        
+    }
 }
 
 class Power extends Basis
@@ -26,40 +36,32 @@ class Power extends Basis
         this.Send := 1
         this.Receive := 0
 
-        ;obtain neighbor nodes
-        Left := Grid[IndexX - 1,IndexY]
-        Right := Grid[IndexX + 1,IndexY]
-        Top := Grid[IndexX,IndexY - 1]
-        Bottom := Grid[IndexX,IndexY + 1]
-
-        ;propagate current state to neighbors
-        If Left.Receive
-            Left.ModifyState(this.State,[])
-        If Right.Receive
-            Right.ModifyState(this.State,[])
-        If Top.Receive
-            Top.ModifyState(this.State,[])
-        If Bottom.Receive
-            Bottom.ModifyState(this.State,[])
+        this.Propagate(this.State)
     }
 
     __Delete()
     {
         global Grid
+        this.Propagate(-this.State)
+    }
+
+    Propagate(Amount)
+    {
+        ;obtain neighbor nodes
         Left := Grid[this.IndexX - 1,this.IndexY]
         Right := Grid[this.IndexX + 1,this.IndexY]
         Top := Grid[this.IndexX,this.IndexY - 1]
         Bottom := Grid[this.IndexX,this.IndexY + 1]
 
-        ;propagate removal of current state to neighbors
+        ;propagate state to neighbors
         If Left.Receive
-            Left.ModifyState(-this.State,[])
+            Left.ModifyState(Amount,[])
         If Right.Receive
-            Right.ModifyState(-this.State,[])
+            Right.ModifyState(Amount,[])
         If Top.Receive
-            Top.ModifyState(-this.State,[])
+            Top.ModifyState(Amount,[])
         If Bottom.Receive
-            Bottom.ModifyState(-this.State,[])
+            Bottom.ModifyState(Amount,[])
     }
 
     ModifyState(Amount,OpenList)
@@ -88,6 +90,18 @@ class Power extends Basis
     PowerSourceConnected()
     {
         Return, this.State
+    }
+
+    Serialize()
+    {
+        Return, this.State
+    }
+
+    Deserialize(IndexX,IndexY,Value)
+    {
+        Result := new this(IndexX,IndexY)
+        Result.State := Value
+        Return, Result
     }
 }
 
@@ -133,5 +147,17 @@ class Load extends Basis
     ModifyState(Amount,OpenList)
     {
         this.State += Amount
+    }
+
+    Serialize()
+    {
+        Return, this.State
+    }
+
+    Deserialize(IndexX,IndexY,Value)
+    {
+        Result := new this(IndexX,IndexY)
+        Result.State := Value
+        Return, Result
     }
 }
