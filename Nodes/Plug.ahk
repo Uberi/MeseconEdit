@@ -1,6 +1,6 @@
 #NoEnv
 
-class Plug extends Load
+class Plug extends Nodes.Load
 {
     static hPen := DllCall("GetStockObject","Int",8,"UPtr") ;NULL_PEN
     static hBrush := DllCall("CreateSolidBrush","UInt",0x3333AA,"UPtr")
@@ -32,9 +32,9 @@ class Plug extends Load
                 If !Grid[this.IndexX + (Offset[1] >> 1),this.IndexY + (Offset[2] >> 1)] ;node between the two nodes is empty
                 {
                     Cell := Grid[this.IndexX + Offset[1],this.IndexY + Offset[2]]
-                    If Cell.__Class = "Socket" && !Cell.State
+                    If Cell.__Class = "Nodes.Socket" && !Cell.State
                         Cell.ModifyState(1,OpenList)
-                    If Cell.__Class = "Inverter" && Cell.State
+                    If Cell.__Class = "Nodes.Inverter" && Cell.State
                         Cell.ModifyState(-1,OpenList)
                 }
             }
@@ -49,9 +49,9 @@ class Plug extends Load
                 If !Grid[this.IndexX + (Offset[1] >> 1),this.IndexY + (Offset[2] >> 1)] ;node between the two nodes is empty
                 {
                     Cell := Grid[this.IndexX + Offset[1],this.IndexY + Offset[2]]
-                    If Cell.__Class = "Socket" && Cell.State
+                    If Cell.__Class = "Nodes.Socket" && Cell.State
                         Cell.ModifyState(-1,OpenList)
-                    If Cell.__Class = "Inverter" && !Cell.State
+                    If Cell.__Class = "Nodes.Inverter" && !Cell.State
                         Cell.ModifyState(1,OpenList)
                 }
             }

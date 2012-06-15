@@ -1,6 +1,6 @@
 #NoEnv
 
-class PowerPlant extends Power
+class PowerPlant extends Nodes.Power
 {
     static hPen := DllCall("GetStockObject","Int",8,"UPtr") ;NULL_PEN
     static hBrush := DllCall("CreateSolidBrush","UInt",0x00FFFF,"UPtr")

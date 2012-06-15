@@ -1,6 +1,6 @@
 #NoEnv
 
-class Meselamp extends Load
+class Meselamp extends Nodes.Load
 {
     static hOffBrush := DllCall("CreateSolidBrush","UInt",0x777777,"UPtr")
     static hOnBrush := DllCall("CreateSolidBrush","UInt",0xFFFFFF,"UPtr")

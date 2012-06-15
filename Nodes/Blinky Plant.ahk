@@ -1,11 +1,11 @@
 #NoEnv
 
-class BlinkyPlant extends Power
+class BlinkyPlant extends Nodes.Power
 {
     static hPen := DllCall("GetStockObject","Int",8,"UPtr") ;NULL_PEN
     static hOffBrush := DllCall("CreateSolidBrush","UInt",0x0000BB,"UPtr")
     static hOnBrush := DllCall("CreateSolidBrush","UInt",0x0088FF,"UPtr")
-    static BlinkyPlantArray := BlinkyPlant.SetBlinkyPlantTimer()
+    static BlinkyPlantArray := Nodes.BlinkyPlant.SetBlinkyPlantTimer()
 
     SetBlinkyPlantTimer()
     {
@@ -14,7 +14,7 @@ class BlinkyPlant extends Power
 
         BlinkyPlantUpdate:
         Critical
-        For pNode In BlinkyPlant.BlinkyPlantArray
+        For pNode In Nodes.BlinkyPlant.BlinkyPlantArray
         {
             Node := Object(pNode)
             Node.ModifyState(Node.State ? -1 : 1,[])

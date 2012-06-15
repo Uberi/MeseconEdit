@@ -1,6 +1,6 @@
 #NoEnv
 
-class Mesecon
+class Mesecon extends Nodes.Basis
 {
     static hOffBrush := DllCall("CreateSolidBrush","UInt",0x008888,"UPtr")
     static hOnBrush := DllCall("CreateSolidBrush","UInt",0x00FFFF,"UPtr")

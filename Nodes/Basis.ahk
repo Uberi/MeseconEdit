@@ -17,16 +17,18 @@ class Basis
 
     Serialize()
     {
-        
+        Return, this.State
     }
 
-    Deserialize(Value)
+    Deserialize(IndexX,IndexY,Value)
     {
-        
+        Result := new this(IndexX,IndexY)
+        Result.State := Value
+        Return, Result
     }
 }
 
-class Power extends Basis
+class Power extends Nodes.Basis
 {
     __New(IndexX,IndexY)
     {
@@ -47,6 +49,8 @@ class Power extends Basis
 
     Propagate(Amount)
     {
+        global Grid
+
         ;obtain neighbor nodes
         Left := Grid[this.IndexX - 1,this.IndexY]
         Right := Grid[this.IndexX + 1,this.IndexY]
@@ -91,21 +95,9 @@ class Power extends Basis
     {
         Return, this.State
     }
-
-    Serialize()
-    {
-        Return, this.State
-    }
-
-    Deserialize(IndexX,IndexY,Value)
-    {
-        Result := new this(IndexX,IndexY)
-        Result.State := Value
-        Return, Result
-    }
 }
 
-class Load extends Basis
+class Load extends Nodes.Basis
 {
     __New(IndexX,IndexY)
     {
@@ -147,17 +139,5 @@ class Load extends Basis
     ModifyState(Amount,OpenList)
     {
         this.State += Amount
-    }
-
-    Serialize()
-    {
-        Return, this.State
-    }
-
-    Deserialize(IndexX,IndexY,Value)
-    {
-        Result := new this(IndexX,IndexY)
-        Result.State := Value
-        Return, Result
     }
 }

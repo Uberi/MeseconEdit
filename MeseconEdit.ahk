@@ -37,6 +37,12 @@ Tools.Insert(Object("Name","&Remove", "Class",ToolActions.Remove))
 Tools.Insert(Object("Name","&Select", "Class",ToolActions.Select))
 Tools.Insert(Object("Name","&Actuate","Class",ToolActions.Actuate))
 
+;http://www.autohotkey.com/docs/commands/Gui.htm#Menu
+Menu, FileMenu, Add, &Open`tCtrl+O, OpenFile  ; See remarks below about Ctrl+O.
+Menu, FileMenu, Add, E&xit, GuiClose
+Menu, MenuBar, Add, &File, :FileMenu
+Gui, Menu, MenuBar
+
 Gui, Add, Text, vDisplay gDisplayClick hwndhControl
 
 Grid := []
@@ -44,10 +50,10 @@ Viewport := Object("X",-14.5,"Y",-14.5,"W",30,"H",30)
 InitializeViewport(hControl,Width,Height)
 
 For Index, Tool In Tools
-    Gui, Add, Radio, vTool%Index% gSelectTool, % Tool.Name
+    Gui, Add, Radio, w80 h20 vTool%Index% gSelectTool, % Tool.Name
 GuiControl,, Tool1, 1
 
-Gui, Add, ListBox, vSubtools
+Gui, Add, ListBox, w80 h200 vSubtools
 CurrentTool := Tools[1]
 CurrentTool.Class.Select()
 
@@ -62,162 +68,22 @@ Return
 
 class ToolActions
 {
-    class Draw
-    {
-        static Subtool := 1
-        static Nodes := Object("Mesecon",     Mesecon
-                              ,"Blinky Plant",BlinkyPlant
-                              ,"Power Plant", PowerPlant
-                              ,"Meselamp",    Meselamp
-                              ,"Plug",        Plug
-                              ,"Socket",      Socket
-                              ,"Inverter",    Inverter)
+    #Include Tools\Draw.ahk
+    #Include Tools\Remove.ahk
+    #Include Tools\Select.ahk
+    #Include Tools\Actuate.ahk
+}
 
-        Select()
-        {
-            Subtools := ""
-            For ToolName In this.Nodes
-                SubTools .= "|" . ToolName
-            GuiControl,, Subtools, %SubTools%
-            GuiControl, Choose, Subtools, % this.SubTool
-        }
-
-        Activate(Grid)
-        {
-            global Width, Height
-            MouseX1 := ~0, MouseY1 := ~0
-            While, GetKeyState("LButton","P")
-            {
-                GetMouseCoordinates(Width,Height,MouseX,MouseY)
-                If (MouseX != MouseX1 || MouseY != MouseY1)
-                {
-                    GuiControlGet, NodeName,, Subtools
-
-                    Grid[MouseX,MouseY] := ""
-                    NodeClass := this.Nodes[NodeName]
-                    Grid[MouseX,MouseY] := new NodeClass(MouseX,MouseY)
-
-                    MouseX1 := MouseX, MouseY1 := MouseY
-                }
-                Sleep, 0
-            }
-        }
-    }
-
-    class Remove
-    {
-        static Subtool := 1
-
-        Select()
-        {
-            GuiControl,, Subtools, |Selection|Connected
-            GuiControl, Choose, Subtools, % this.Subtool
-        }
-
-        Activate(Grid)
-        {
-            global Width, Height
-            MouseX1 := ~0, MouseY1 := ~0
-            While, GetKeyState("LButton","P")
-            {
-                GetMouseCoordinates(Width,Height,MouseX,MouseY)
-                If (MouseX != MouseX1 || MouseY != MouseY1)
-                {
-                    If Grid.HasKey(MouseX) && Grid[MouseX].HasKey(MouseY)
-                    {
-                        Grid[MouseX].Remove(MouseY,"")
-                        If Grid[MouseX].MaxIndex() = ""
-                            Grid.Remove(MouseX,"")
-                    }
-
-                    MouseX1 := MouseX, MouseY1 := MouseY
-                }
-                Sleep, 0
-            }
-        }
-    }
-
-    class Select
-    {
-        static Subtool := 1
-
-        Select()
-        {
-            GuiControl,, Subtools, |Area|Extend|Connected
-            GuiControl, Choose, Subtools, % this.SubTool
-        }
-
-        Activate(Grid) ;wip
-        {
-            global hMemoryDC, Width, Height, Viewport
-            static hPen := DllCall("CreatePen","Int",0,"Int",2,"UInt",0x0000FF,"UPtr") ;PS_SOLID
-            static hBrush := DllCall("GetStockObject","Int",5,"UPtr") ;NULL_BRUSH
-            VarSetCapacity(Rectangle,16)
-
-            IndexX := Floor(Viewport.X), IndexY := Floor(Viewport.Y)
-            BlockW := Width / Viewport.W, BlockH := Height / Viewport.H
-            BlockX := Mod(-Viewport.X,1) * BlockW
-            If BlockX > 0
-                BlockX -= BlockW
-            BlockY := Mod(-Viewport.Y,1) * BlockH
-            If BlockY > 0
-                BlockY -= BlockH
-
-            GetMouseCoordinates(Width,Height,StartX,StartY)
-            X := BlockX + (BlockW * (StartX - IndexX))
-            Y := BlockY + (BlockH * (StartY - IndexY))
-
-            MouseX1 := ~0, MouseY1 := ~0
-            While, GetKeyState("LButton","P")
-            {
-                GetMouseCoordinates(Width,Height,MouseX,MouseY)
-                ;If (MouseX != MouseX1 || MouseY != MouseY1) ;wip
-                ;{
-                    W := BlockW * ((MouseX + 1) - StartX)
-                    H := BlockH * ((MouseY + 1) - StartY)
-
-                    hOriginalPen := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hPen,"UPtr") ;select the pen
-                    hOriginalBrush := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hBrush,"UPtr") ;select the brush
-
-                    ;draw rectangle
-                    DllCall("Rectangle","UPtr",hMemoryDC,"Int",Round(X),"Int",Round(Y),"Int",Round(X + W),"Int",Round(Y + H))
-                    global hDC
-                    If !DllCall("BitBlt","UPtr",hDC,"Int",0,"Int",0,"Int",Width,"Int",Height,"UPtr",hMemoryDC,"Int",0,"Int",0,"UInt",0xCC0020) ;SRCCOPY
-                        throw Exception("Could not transfer pixel data to window device context.")
-
-                    DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalPen,"UPtr") ;deselect the pen
-                    DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalBrush,"UPtr") ;deselect the brush
-
-                    MouseX1 := MouseX, MouseY1 := MouseY
-                ;}
-                Sleep, 1
-            }
-        }
-    }
-
-    class Actuate
-    {
-        static Subtool := 1
-
-        Select()
-        {
-            GuiControl,, Subtools, |Hit|Walk Over
-            GuiControl, Choose, Subtools, % this.SubTool
-        }
-
-        Activate(Grid)
-        {
-            global Width, Height
-            GetMouseCoordinates(Width,Height,MouseX,MouseY)
-            Cell := Grid[MouseX,MouseY]
-
-            GuiControlGet, Action,, Subtools
-            If (Action = "Hit")
-                Cell.Punch()
-            Else If (Action = "Walk Over")
-                Cell.WalkOver()
-        }
-    }
+class Nodes
+{
+    #Include %A_ScriptDir%\Nodes\Basis.ahk
+    #Include %A_ScriptDir%\Nodes\Mesecon.ahk
+    #Include %A_ScriptDir%\Nodes\Power Plant.ahk
+    #Include %A_ScriptDir%\Nodes\Blinky Plant.ahk
+    #Include %A_ScriptDir%\Nodes\Meselamp.ahk
+    #Include %A_ScriptDir%\Nodes\Plug.ahk
+    #Include %A_ScriptDir%\Nodes\Socket.ahk
+    #Include %A_ScriptDir%\Nodes\Inverter.ahk
 }
 
 GuiClose:
@@ -239,10 +105,10 @@ Viewport.Y -= Viewport.H / 2
 
 Temp1 := 10
 For Index In Tools
-    GuiControl, Move, Tool%Index%, % "x" . (A_GuiWidth - 90) . " y" . Temp1 . " w80 h20", Temp1 += 20
+    GuiControl, Move, Tool%Index%, % "x" . (A_GuiWidth - 90) . " y" . Temp1, Temp1 += 20
 
 Temp1 += 20
-GuiControl, Move, Subtools, % "x" . (A_GuiWidth - 90) . " y" . Temp1 . " w80 h200"
+GuiControl, Move, Subtools, % "x" . (A_GuiWidth - 90) . " y" . Temp1
 
 Sleep, 10
 Return
@@ -303,6 +169,26 @@ While, GetKeyState("RButton","P")
 }
 Return
 
+OpenFile:
+FileSelectFile, FileName, 35,, Select a mesecon schematic:, Mesecon Schematic (*.mesecon)
+If ErrorLevel
+    Return
+FileRead, Value, %FileName%
+If ErrorLevel
+{
+    MsgBox, 16, Error, Could not read file "%FileName%".
+    Return
+}
+;wip: ask to save current file if modified
+Grid := Deserialize(Value)
+Return
+
+SaveFile:
+;wip: file selection
+FileDelete, Test.mesecon
+FileAppend, % Serialize(Grid), Test.mesecon
+Return
+
 Space::
 While, GetKeyState("Space","P")
 {
@@ -354,19 +240,46 @@ Serialize(Grid)
         For IndexY, Node In Column
             Result .= IndexX . "`t" . IndexY . "`t" . Node.__Class . "`t" . Node.Serialize() . "`n"
     }
-    Return, Result
+    Return, SubStr(Result,1,-1)
 }
 
 Deserialize(Value)
 {
-    local Grid, Field0
+    global
+    local NodeClasses, Grid, Position, IndexX, IndexY, NodeName, Data, NodeClass
+
+    ;create a mapping of node class names to node classes
+    NodeClasses := Object()
+    For Name, Node In Nodes
+    {
+        If IsObject(Node)
+            NodeClasses[Node.__Class] := Node
+    }
+
     Grid := []
     StringReplace, Value, Value, `r,, All
     Value := Trim(Value,"`n")
     Loop, Parse, Value, `n
     {
-        StringSplit, Field, A_LoopField, %A_Tab% ;wip: serialized data cannot contain tabs or newlines
-        Grid[Field1,Field2] := new %Field3%(Field1,Field2)
+        ;wip: serialized data cannot contain newlines
+        Data := A_LoopField
+
+        Position := InStr(Data,"`t")
+        IndexX := SubStr(Data,1,Position - 1)
+        Data := SubStr(Data,Position + 1)
+
+        Position := InStr(Data,"`t")
+        IndexY := SubStr(Data,1,Position - 1)
+        Data := SubStr(Data,Position + 1)
+
+        Position := InStr(Data,"`t")
+        NodeName := SubStr(Data,1,Position - 1)
+        Data := SubStr(Data,Position + 1)
+
+        If !NodeClasses.HasKey(NodeName)
+            throw Exception("Unknown node class: " . NodeName . ".")
+        NodeClass := NodeClasses[NodeName]
+        Grid[IndexX,IndexY] := new NodeClass(IndexX,IndexY)
     }
     Return, Grid
 }
@@ -487,12 +400,3 @@ SizeWindow(Width,Height)
     If !hOriginalBitmap
         throw Exception("Could not select bitmap into memory device context.")
 }
-
-#Include %A_ScriptDir%\Nodes\Basis.ahk
-#Include %A_ScriptDir%\Nodes\Mesecon.ahk
-#Include %A_ScriptDir%\Nodes\Power Plant.ahk
-#Include %A_ScriptDir%\Nodes\Blinky Plant.ahk
-#Include %A_ScriptDir%\Nodes\Meselamp.ahk
-#Include %A_ScriptDir%\Nodes\Plug.ahk
-#Include %A_ScriptDir%\Nodes\Socket.ahk
-#Include %A_ScriptDir%\Nodes\Inverter.ahk

@@ -1,6 +1,6 @@
 #NoEnv
 
-class Socket extends Power
+class Socket extends Nodes.Power
 {
     static hPen := DllCall("GetStockObject","Int",8,"UPtr") ;NULL_PEN
     static hBrush := DllCall("CreateSolidBrush","UInt",0xAAAAAA,"UPtr")
@@ -17,7 +17,7 @@ class Socket extends Power
             If !Grid[IndexX + (Offset[1] >> 1),IndexY + (Offset[2] >> 1)] ;node between the two nodes is empty
             {
                 Cell := Grid[IndexX + Offset[1],IndexY + Offset[2]]
-                If Cell.__Class = "Plug" && Cell.State
+                If Cell.__Class = "Nodes.Plug" && Cell.State
                 {
                     this.State := 1
                     Break
