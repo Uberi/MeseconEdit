@@ -6,8 +6,8 @@ class Select
 
     Select()
     {
-        GuiControl,, Subtools, |Area|Extend|Connected
-        GuiControl, Choose, Subtools, % this.SubTool
+        GuiControl, Main:, Subtools, |Area|Extend|Connected
+        GuiControl, Main:Choose, Subtools, % this.SubTool
     }
 
     Activate(Grid) ;wip

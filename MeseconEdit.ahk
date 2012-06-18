@@ -1,5 +1,6 @@
 #NoEnv
 
+;wip: add license
 ;wip: multiple simultaneous viewports with independent views
 ;wip: undo/redo
 ;wip: component count in status bar - nodes used in selection, in total
@@ -31,36 +32,47 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Width := 800
 Height := 600
 
+CurrentFile := ""
+
 Tools := []
 Tools.Insert(Object("Name","&Draw",   "Class",ToolActions.Draw))
 Tools.Insert(Object("Name","&Remove", "Class",ToolActions.Remove))
 Tools.Insert(Object("Name","&Select", "Class",ToolActions.Select))
 Tools.Insert(Object("Name","&Actuate","Class",ToolActions.Actuate))
 
-;http://www.autohotkey.com/docs/commands/Gui.htm#Menu
-Menu, FileMenu, Add, &Open`tCtrl+O, OpenFile  ; See remarks below about Ctrl+O.
-Menu, FileMenu, Add, E&xit, GuiClose
+Menu, FileMenu, Add, &New, FileNew
+Menu, FileMenu, Add, &Open, FileOpen
+Menu, FileMenu, Add, &Save, FileSave
+Menu, FileMenu, Add, Save &As, FileSaveAs
+Menu, FileMenu, Add, E&xit, MainGuiClose
+
+;Menu, OptionsMenu, Add, &Simulation, ShowSimulationOptions
+
+Menu, HelpMenu, Add, &Manual, ShowHelp
+Menu, HelpMenu, Add, &About, ShowAbout
+
 Menu, MenuBar, Add, &File, :FileMenu
-Gui, Menu, MenuBar
+;Menu, MenuBar, Add, &Options, :OptionsMenu
+Menu, MenuBar, Add, &Help, :HelpMenu
+Gui, Main:Menu, MenuBar
 
-Gui, Add, Text, vDisplay gDisplayClick hwndhControl
+Gui, Main:Add, Text, vDisplay gDisplayClick hwndhControl
 
-Grid := []
-Viewport := Object("X",-14.5,"Y",-14.5,"W",30,"H",30)
 InitializeViewport(hControl,Width,Height)
 
 For Index, Tool In Tools
-    Gui, Add, Radio, w80 h20 vTool%Index% gSelectTool, % Tool.Name
-GuiControl,, Tool1, 1
+    Gui, Main:Add, Radio, w80 h20 vTool%Index% gSelectTool, % Tool.Name
+GuiControl, Main:, Tool1, 1
 
-Gui, Add, ListBox, w80 h200 vSubtools
+Gui, Main:Add, ListBox, w80 h200 vSubtools
+
+Gui, Main:+Resize +MinSize400x320
+Gui, Main:Show, w800 h600 Hide
+
+Gosub, FileNew
+
 CurrentTool := Tools[1]
 CurrentTool.Class.Select()
-
-;wip: add options
-
-Gui, +Resize +MinSize400x320
-Gui, Show, w800 h600, MeseconEdit
 
 Gosub, Draw
 SetTimer, Draw, 50
@@ -86,36 +98,47 @@ class Nodes
     #Include %A_ScriptDir%\Nodes\Inverter.ahk
 }
 
-GuiClose:
+ShowHelp:
+;wip: open manual here
+Return
+
+ShowAbout:
+Gui, Main:+Disabled
+Gui, About:+OwnerMain +ToolWindow
+Gui, About:Font, s48, Arial
+Gui, About:Add, Text, x10 y10 w400 h70, MeseconEdit
+Gui, About:Font, s8 Bold
+Gui, About:Add, Text, x10 y80 w200 h20, v1.0 Stable
+Gui, About:Font, Norm
+Gui, About:Add, Text, x210 y80 w200 h20 Right, Copyright Anthony Zhang 2012
+Gui, About:Font, s12
+Gui, About:Add, Link, x10 y110 w400 h20, Licensed under the <a href="http://www.gnu.org/licenses/">GNU Affero General Public License</a>.
+Gui, About:Show, w420 h140
+Return
+
+AboutGuiEscape:
+AboutGuiClose:
+Gui, About:Destroy
+Gui, Main:-Disabled
+Gui, Main:Show
+Return
+
+MainGuiClose:
 SetTimer, Draw, Off
 UninitializeViewport(hControl)
 ExitApp
 
-GuiSize:
+MainGuiSize:
 Critical
 If A_EventInfo = 1 ;window minimised
     Return
-
-Width := A_GuiWidth - 110, Height := A_GuiHeight - 20
-GuiControl, Move, Display, x10 y10 w%Width% h%Height%
-SizeWindow(Width,Height)
-Viewport.Y += Viewport.H / 2
-Viewport.H := (Height / Width) * Viewport.W
-Viewport.Y -= Viewport.H / 2
-
-Temp1 := 10
-For Index In Tools
-    GuiControl, Move, Tool%Index%, % "x" . (A_GuiWidth - 90) . " y" . Temp1, Temp1 += 20
-
-Temp1 += 20
-GuiControl, Move, Subtools, % "x" . (A_GuiWidth - 90) . " y" . Temp1
-
+ResizeWindow(A_GuiWidth,A_GuiHeight)
 Sleep, 10
 Return
 
 SelectTool:
 ;store the index of the previously selected subtool
-Gui, +LastFound
+Gui, Main:+LastFound
 SendMessage, 0x188, 0, 0, ListBox1 ;LB_GETCURSEL
 CurrentTool.Class.Subtool := ErrorLevel + 1
 
@@ -143,7 +166,7 @@ While, GetKeyState("RButton","P")
     Viewport.Y := ViewportY1 - ((PositionY / Height) * Viewport.H)
 
     ;obtain the position of the viewport
-    GuiControlGet, TempPosition, Pos, Display
+    GuiControlGet, TempPosition, Main:Pos, Display
     If (MouseX < TempPositionX) ;mouse past left edge of viewport
     {
         OffsetX += TempPositionW
@@ -169,8 +192,17 @@ While, GetKeyState("RButton","P")
 }
 Return
 
-OpenFile:
-FileSelectFile, FileName, 35,, Select a mesecon schematic:, Mesecon Schematic (*.mesecon)
+FileNew:
+Grid := []
+Viewport := Object("X",-14.5,"Y",-14.5,"W",30,"H",30)
+Gui, Main:Show,, MeseconEdit - Untitled
+Gui, Main:+LastFound
+WinGetPos,,, Width, Height ;wip: get client area
+ResizeWindow(Width,Height)
+Return
+
+FileOpen:
+FileSelectFile, FileName, 35,, Open mesecon schematic, Mesecon Schematic (*.mesecon)
 If ErrorLevel
     Return
 FileRead, Value, %FileName%
@@ -183,10 +215,27 @@ If ErrorLevel
 Grid := Deserialize(Value)
 Return
 
-SaveFile:
-;wip: file selection
-FileDelete, Test.mesecon
-FileAppend, % Serialize(Grid), Test.mesecon
+FileSave:
+If (CurrentFile = "")
+{
+    Gosub, FileSaveAs
+    Return
+}
+FileDelete, %CurrentFile%
+FileAppend, % Serialize(Grid), %CurrentFile%
+If ErrorLevel
+{
+    Gui, Main:+OwnDialogs
+    MsgBox, 16, Error, Could not save file as "%CurrentFile%".
+}
+Return
+
+FileSaveAs:
+FileSelectFile, FileName, S48,, Save mesecon schematic, Mesecon Schematic (*.mesecon)
+If ErrorLevel
+    Return
+CurrentFile := FileName
+Gosub, FileSave
 Return
 
 Space::
@@ -203,7 +252,7 @@ While, GetKeyState("Space","P")
 Return
 
 DisplayClick:
-Gui, Submit, NoHide
+Gui, Main:Submit, NoHide
 For Index, Tool In Tools
 {
     If Tool%Index%
@@ -292,7 +341,7 @@ GetMouseCoordinates(Width,Height,ByRef MouseX,ByRef MouseY)
     MouseGetPos, MouseX, MouseY
 
     ;obtain the viewport position
-    GuiControlGet, Offset, Pos, Display
+    GuiControlGet, Offset, Main:Pos, Display
 
     ;calculate the cell the mouse in in
     MouseX -= OffsetX, MouseY -= OffsetY
@@ -312,7 +361,7 @@ InitializeViewport(hWindow,Width,Height)
 
     hOriginalBitmap := 0
 
-    SizeWindow(Width,Height)
+    ResizeViewport(Width,Height)
 }
 
 UninitializeViewport(hWindow)
@@ -385,7 +434,25 @@ Draw(Grid,Width,Height,Viewport)
         throw Exception("Could not transfer pixel data to window device context.")
 }
 
-SizeWindow(Width,Height)
+ResizeWindow(Width,Height)
+{
+    global Viewport, Tools
+    ViewportWidth := Width - 110, ViewportHeight := Height - 20
+    GuiControl, Main:Move, Display, x10 y10 w%ViewportWidth% h%ViewportHeight%
+    ResizeViewport(ViewportWidth,ViewportHeight)
+    Viewport.Y += Viewport.H / 2
+    Viewport.H := (Height / Width) * Viewport.W
+    Viewport.Y -= Viewport.H / 2
+
+    Temp1 := 10
+    For Index In Tools
+        GuiControl, Main:Move, Tool%Index%, % "x" . (Width - 90) . " y" . Temp1, Temp1 += 20
+
+    Temp1 += 20
+    GuiControl, Main:Move, Subtools, % "x" . (Width - 90) . " y" . Temp1
+}
+
+ResizeViewport(Width,Height)
 {
     global hDC, hMemoryDC, hOriginalBitmap, hBitmap
     If hOriginalBitmap

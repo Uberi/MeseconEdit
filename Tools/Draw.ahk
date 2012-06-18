@@ -16,8 +16,8 @@ class Draw
         Subtools := ""
         For ToolName In this.Nodes
             SubTools .= "|" . ToolName
-        GuiControl,, Subtools, %SubTools%
-        GuiControl, Choose, Subtools, % this.SubTool
+        GuiControl, Main:, Subtools, %SubTools%
+        GuiControl, Main:Choose, Subtools, % this.SubTool
     }
 
     Activate(Grid)
@@ -29,7 +29,7 @@ class Draw
             GetMouseCoordinates(Width,Height,MouseX,MouseY)
             If (MouseX != MouseX1 || MouseY != MouseY1)
             {
-                GuiControlGet, NodeName,, Subtools
+                GuiControlGet, NodeName, Main:, Subtools
 
                 Grid[MouseX,MouseY] := ""
                 NodeClass := this.Nodes[NodeName]

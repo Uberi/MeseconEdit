@@ -6,8 +6,8 @@ class Remove
 
     Select()
     {
-        GuiControl,, Subtools, |Selection|Connected
-        GuiControl, Choose, Subtools, % this.Subtool
+        GuiControl, Main:, Subtools, |Selection|Connected
+        GuiControl, Main:Choose, Subtools, % this.Subtool
     }
 
     Activate(Grid)

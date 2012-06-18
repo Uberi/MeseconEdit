@@ -6,8 +6,8 @@ class Actuate
 
     Select()
     {
-        GuiControl,, Subtools, |Hit|Walk Over
-        GuiControl, Choose, Subtools, % this.SubTool
+        GuiControl, Main:, Subtools, |Hit|Walk Over
+        GuiControl, Main:Choose, Subtools, % this.SubTool
     }
 
     Activate(Grid)
@@ -16,7 +16,7 @@ class Actuate
         GetMouseCoordinates(Width,Height,MouseX,MouseY)
         Cell := Grid[MouseX,MouseY]
 
-        GuiControlGet, Action,, Subtools
+        GuiControlGet, Action, Main:, Subtools
         If (Action = "Hit")
             Cell.Punch()
         Else If (Action = "Walk Over")
