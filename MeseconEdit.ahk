@@ -99,6 +99,54 @@ class Nodes
     #Include %A_ScriptDir%\Nodes\Inverter.ahk
 }
 
+FileNew:
+Grid := []
+Viewport := Object("X",-14.5,"Y",-14.5,"W",30,"H",30)
+Gui, Main:Show,, MeseconEdit - Untitled
+ResizeWindow(Width,Height)
+Return
+
+FileOpen:
+FileSelectFile, FileName, 35,, Open mesecon schematic, Mesecon Schematic (*.mesecon)
+If ErrorLevel
+    Return
+CurrentFile := FileName
+FileRead, Value, %CurrentFile%
+If ErrorLevel
+{
+    MsgBox, 16, Error, Could not read file "%FileName%".
+    Return
+}
+;wip: ask to save current file if modified
+Gui, Main:Show,, MeseconEdit - %CurrentFile%
+Grid := Deserialize(Value)
+Return
+
+FileSave:
+;wip: don't save file if not modified
+If (CurrentFile = "")
+{
+    Gosub, FileSaveAs
+    Return
+}
+FileDelete, %CurrentFile%
+FileAppend, % Serialize(Grid), %CurrentFile%
+If ErrorLevel
+{
+    Gui, Main:+OwnDialogs
+    MsgBox, 16, Error, Could not save file as "%CurrentFile%".
+}
+Return
+
+FileSaveAs:
+FileSelectFile, FileName, S48,, Save mesecon schematic, Mesecon Schematic (*.mesecon)
+If ErrorLevel
+    Return
+CurrentFile := FileName
+Gui, Main:Show,, MeseconEdit - %CurrentFile%
+Gosub, FileSave
+Return
+
 ShowHelp:
 ;wip: open manual here
 Return
@@ -193,54 +241,6 @@ While, GetKeyState("RButton","P")
 
     Sleep, 50
 }
-Return
-
-FileNew:
-Grid := []
-Viewport := Object("X",-14.5,"Y",-14.5,"W",30,"H",30)
-Gui, Main:Show,, MeseconEdit - Untitled
-ResizeWindow(Width,Height)
-Return
-
-FileOpen:
-FileSelectFile, FileName, 35,, Open mesecon schematic, Mesecon Schematic (*.mesecon)
-If ErrorLevel
-    Return
-CurrentFile := FileName
-FileRead, Value, %CurrentFile%
-If ErrorLevel
-{
-    MsgBox, 16, Error, Could not read file "%FileName%".
-    Return
-}
-;wip: ask to save current file if modified
-Gui, Main:Show,, MeseconEdit - %CurrentFile%
-Grid := Deserialize(Value)
-Return
-
-FileSave:
-;wip: don't save file if not modified
-If (CurrentFile = "")
-{
-    Gosub, FileSaveAs
-    Return
-}
-FileDelete, %CurrentFile%
-FileAppend, % Serialize(Grid), %CurrentFile%
-If ErrorLevel
-{
-    Gui, Main:+OwnDialogs
-    MsgBox, 16, Error, Could not save file as "%CurrentFile%".
-}
-Return
-
-FileSaveAs:
-FileSelectFile, FileName, S48,, Save mesecon schematic, Mesecon Schematic (*.mesecon)
-If ErrorLevel
-    Return
-CurrentFile := FileName
-Gui, Main:Show,, MeseconEdit - %CurrentFile%
-Gosub, FileSave
 Return
 
 Space::
