@@ -1,9 +1,10 @@
 #NoEnv
 
+;wip: export to worldedit format
 ;wip: multiple simultaneous viewports with independent views
 ;wip: undo/redo
 ;wip: component count in status bar - nodes used in selection, in total
-;wip: rectangular selection and selection filling/moving/copying/pasting
+;wip: selection filling/moving/copying/pasting
 
 /*
 Copyright 2012 Anthony Zhang <azhang9@gmail.com>
@@ -30,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Width := 800
 Height := 600
 
-CurrentFile := ""
+FileModified := False
 
 Tools := []
 Tools.Insert(Object("Name","&Draw",   "Class",ToolActions.Draw))
@@ -99,13 +100,32 @@ class Nodes
 }
 
 FileNew:
-Grid := []
+If FileModified
+{
+    MsgBox, 35, Confirm, Save current schematic?
+    IfMsgBox, Cancel
+        Return
+    IfMsgBox, Yes
+        Gosub, FileSave
+}
 Viewport := Object("X",-14.5,"Y",-14.5,"W",30,"H",30)
-Gui, Main:Show,, MeseconEdit - Untitled
+CurrentFile := "<Untitled>"
+Grid := []
+Gui, Main:Show,, MeseconEdit - %CurrentFile%
+Menu, FileMenu, Disable, &Save
+FileModified := False
 ResizeWindow(Width,Height)
 Return
 
-FileOpen:
+FileOpen: ;wip: load viewport
+If FileModified
+{
+    MsgBox, 35, Confirm, Save current schematic?
+    IfMsgBox, Cancel
+        Return
+    IfMsgBox, Yes
+        Gosub, FileSave
+}
 FileSelectFile, FileName, 35,, Open mesecon schematic, Mesecon Schematic (*.mesecon)
 If ErrorLevel
     Return
@@ -116,14 +136,14 @@ If ErrorLevel
     MsgBox, 16, Error, Could not read file "%FileName%".
     Return
 }
-;wip: ask to save current file if modified
 Gui, Main:Show,, MeseconEdit - %CurrentFile%
+Menu, FileMenu, Disable, &Save
+FileModified := False
 Grid := Deserialize(Value)
 Return
 
-FileSave:
-;wip: don't save file if not modified
-If (CurrentFile = "")
+FileSave: ;wip: save viewport
+If (CurrentFile = "<Untitled>")
 {
     Gosub, FileSaveAs
     Return
@@ -135,6 +155,9 @@ If ErrorLevel
     Gui, Main:+OwnDialogs
     MsgBox, 16, Error, Could not save file as "%CurrentFile%".
 }
+Gui, Main:Show,, MeseconEdit - %CurrentFile%
+Menu, FileMenu, Disable, &Save
+FileModified := False
 Return
 
 FileSaveAs:
@@ -172,6 +195,14 @@ Gui, Main:Show
 Return
 
 MainGuiClose:
+If FileModified
+{
+    MsgBox, 35, Confirm, Save current schematic?
+    IfMsgBox, Cancel
+        Return
+    IfMsgBox, Yes
+        Gosub, FileSave
+}
 SetTimer, Draw, Off
 UninitializeViewport(hControl)
 ExitApp
@@ -265,6 +296,9 @@ For Index, Tool In Tools
         Break
     }
 }
+Gui, Main:Show,, * MeseconEdit - %CurrentFile%
+Menu, FileMenu, Enable, &Save
+FileModified := True
 Return
 
 ~PGUP::
