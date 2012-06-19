@@ -4,7 +4,6 @@
 ;wip: undo/redo
 ;wip: component count in status bar - nodes used in selection, in total
 ;wip: rectangular selection and selection filling/moving/copying/pasting
-;wip: file saving/loading and new nodes
 
 /*
 Copyright 2012 Anthony Zhang <azhang9@gmail.com>
