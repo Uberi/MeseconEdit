@@ -23,4 +23,14 @@ class PowerPlant extends Nodes.Power
         DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalPen,"UPtr") ;deselect the pen
         DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalBrush,"UPtr") ;deselect the brush
     }
+
+    Serialize()
+    {
+        Return, ""
+    }
+
+    Deserialize(IndexX,IndexY,Value)
+    {
+        Return, new this(IndexX,IndexY)
+    }
 }

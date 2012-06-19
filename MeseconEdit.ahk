@@ -1,6 +1,5 @@
 #NoEnv
 
-;wip: add license
 ;wip: multiple simultaneous viewports with independent views
 ;wip: undo/redo
 ;wip: component count in status bar - nodes used in selection, in total
@@ -42,8 +41,10 @@ Tools.Insert(Object("Name","&Actuate","Class",ToolActions.Actuate))
 
 Menu, FileMenu, Add, &New, FileNew
 Menu, FileMenu, Add, &Open, FileOpen
+Menu, FileMenu, Add
 Menu, FileMenu, Add, &Save, FileSave
 Menu, FileMenu, Add, Save &As, FileSaveAs
+Menu, FileMenu, Add
 Menu, FileMenu, Add, E&xit, MainGuiClose
 
 ;Menu, OptionsMenu, Add, &Simulation, ShowSimulationOptions
@@ -132,7 +133,9 @@ MainGuiSize:
 Critical
 If A_EventInfo = 1 ;window minimised
     Return
-ResizeWindow(A_GuiWidth,A_GuiHeight)
+Width := A_GuiWidth
+Height := A_GuiHeight
+ResizeWindow(Width,Height)
 Sleep, 10
 Return
 
@@ -196,8 +199,6 @@ FileNew:
 Grid := []
 Viewport := Object("X",-14.5,"Y",-14.5,"W",30,"H",30)
 Gui, Main:Show,, MeseconEdit - Untitled
-Gui, Main:+LastFound
-WinGetPos,,, Width, Height ;wip: get client area
 ResizeWindow(Width,Height)
 Return
 
@@ -205,17 +206,20 @@ FileOpen:
 FileSelectFile, FileName, 35,, Open mesecon schematic, Mesecon Schematic (*.mesecon)
 If ErrorLevel
     Return
-FileRead, Value, %FileName%
+CurrentFile := FileName
+FileRead, Value, %CurrentFile%
 If ErrorLevel
 {
     MsgBox, 16, Error, Could not read file "%FileName%".
     Return
 }
 ;wip: ask to save current file if modified
+Gui, Main:Show,, MeseconEdit - %CurrentFile%
 Grid := Deserialize(Value)
 Return
 
 FileSave:
+;wip: don't save file if not modified
 If (CurrentFile = "")
 {
     Gosub, FileSaveAs
@@ -235,6 +239,7 @@ FileSelectFile, FileName, S48,, Save mesecon schematic, Mesecon Schematic (*.mes
 If ErrorLevel
     Return
 CurrentFile := FileName
+Gui, Main:Show,, MeseconEdit - %CurrentFile%
 Gosub, FileSave
 Return
 
@@ -327,8 +332,7 @@ Deserialize(Value)
 
         If !NodeClasses.HasKey(NodeName)
             throw Exception("Unknown node class: " . NodeName . ".")
-        NodeClass := NodeClasses[NodeName]
-        Grid[IndexX,IndexY] := new NodeClass(IndexX,IndexY)
+        Grid[IndexX,IndexY] := NodeClasses[NodeName].Deserialize(IndexX,IndexY,Data)
     }
     Return, Grid
 }
