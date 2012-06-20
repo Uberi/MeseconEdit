@@ -35,8 +35,8 @@ class Power extends Nodes.Basis
         global Grid
 
         this.IndexX := IndexX, this.IndexY := IndexY
-        this.Send := 1
-        this.Receive := 0
+        this.Send := True
+        this.Receive := False
 
         this.Propagate(this.State)
     }
@@ -102,8 +102,8 @@ class Load extends Nodes.Basis
     __New(IndexX,IndexY)
     {
         this.IndexX := IndexX, this.IndexY := IndexY
-        this.Send := 0
-        this.Receive := 1
+        this.Send := False
+        this.Receive := True
 
         this.Recalculate([])
     }

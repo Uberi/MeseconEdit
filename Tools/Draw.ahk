@@ -3,7 +3,8 @@
 class Draw
 {
     static Subtool := 1
-    static Nodes := Object("Mesecon",     Nodes.Mesecon
+    static Nodes := Object("Solid",       Nodes.Solid
+                          ,"Mesecon",     Nodes.Mesecon
                           ,"Blinky Plant",Nodes.BlinkyPlant
                           ,"Power Plant", Nodes.PowerPlant
                           ,"Meselamp",    Nodes.Meselamp

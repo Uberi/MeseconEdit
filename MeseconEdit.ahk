@@ -3,7 +3,7 @@
 ;wip: export to worldedit format
 ;wip: multiple simultaneous viewports with independent views
 ;wip: undo/redo
-;wip: component count in status bar - nodes used in selection, in total
+;wip: component count in status bar - nodes used in selection, in total, as well as info such as hovered node class and state
 ;wip: selection filling/moving/copying/pasting
 
 /*
@@ -67,7 +67,8 @@ GuiControl, Main:, Tool1, 1
 
 Gui, Main:Add, ListBox, w80 h200 vSubtools
 
-Gui, Main:+Resize +MinSize400x320
+Gui, Main:+Resize +MinSize400x320 +LastFound
+GroupAdd, Main, % "ahk_id " . WinExist()
 Gui, Main:Show, w800 h600 Hide
 
 Gosub, FileNew
@@ -78,6 +79,8 @@ CurrentTool.Class.Select()
 Gosub, Draw
 SetTimer, Draw, 50
 Return
+
+#IfWinActive ahk_group Main
 
 class ToolActions
 {
@@ -90,6 +93,7 @@ class ToolActions
 class Nodes
 {
     #Include %A_ScriptDir%\Nodes\Basis.ahk
+    #Include %A_ScriptDir%\Nodes\Solid.ahk
     #Include %A_ScriptDir%\Nodes\Mesecon.ahk
     #Include %A_ScriptDir%\Nodes\Power Plant.ahk
     #Include %A_ScriptDir%\Nodes\Blinky Plant.ahk
@@ -231,8 +235,6 @@ Return
 Draw:
 Draw(Grid,Width,Height,Viewport)
 Return
-
-#IfWinActive MeseconEdit ahk_class AutoHotkeyGUI
 
 ~RButton::
 CoordMode, Mouse, Client

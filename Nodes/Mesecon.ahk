@@ -9,8 +9,8 @@ class Mesecon extends Nodes.Basis
     {
         global Grid
         this.IndexX := IndexX, this.IndexY := IndexY
-        this.Send := 1
-        this.Receive := 1
+        this.Send := True
+        this.Receive := True
 
         ;obtain neighbor nodes
         Left := Grid[IndexX - 1,IndexY]
