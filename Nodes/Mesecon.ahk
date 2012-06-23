@@ -33,15 +33,35 @@ class Mesecon extends Nodes.Basis
         {
             OpenList := [], OpenList[IndexX,IndexY] := 1
 
-            ;propagate current state to neighbors
+            ;propagate current state to neighbors ;wip: this is somewhat broken for the following: Power-Mesecon-Plug-Power, when Mesecon is inserted last
             If Left.Receive
-                Left.ModifyState(this.State - Left.State,OpenList)
+            {
+                If Left.Send
+                    Left.ModifyState(this.State - Left.State,OpenList)
+                Else
+                    Left.ModifyState(this.State,OpenList)
+            }
             If Right.Receive
-                Right.ModifyState(this.State - Right.State,OpenList)
+            {
+                If Right.Send
+                    Right.ModifyState(this.State - Right.State,OpenList)
+                Else
+                    Right.ModifyState(this.State,OpenList)
+            }
             If Top.Receive
-                Top.ModifyState(this.State - Top.State,OpenList)
+            {
+                If Top.Send
+                    Top.ModifyState(this.State - Top.State,OpenList)
+                Else
+                    Top.ModifyState(this.State,OpenList)
+            }
             If Bottom.Receive
-                Bottom.ModifyState(this.State - Bottom.State,OpenList)
+            {
+                If Bottom.Send
+                    Bottom.ModifyState(this.State - Bottom.State,OpenList)
+                Else
+                    Bottom.ModifyState(this.State,OpenList)
+            }
         }
     }
 

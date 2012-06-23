@@ -7,14 +7,12 @@ class Plug extends Nodes.Load
 
     Recalculate(OpenList)
     {
-        global Grid
         base.Recalculate(OpenList)
         this.UpdatePlug(OpenList)
     }
 
     ModifyState(Amount,OpenList)
     {
-        global Grid
         base.ModifyState(Amount,OpenList)
         this.UpdatePlug(OpenList)
     }
