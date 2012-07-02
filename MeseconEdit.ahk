@@ -1,6 +1,5 @@
 #NoEnv
 
-;wip: export to worldedit format
 ;wip: multiple simultaneous viewports with independent views
 ;wip: undo/redo
 ;wip: component count in status bar - nodes used in selection, in total, as well as info such as hovered node class and state
@@ -31,6 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Width := 800
 Height := 600
 
+FileVersion := "Mesecon Schematic Version 1"
+
 FileModified := False
 
 Tools := []
@@ -44,6 +45,9 @@ Menu, FileMenu, Add, &Open, FileOpen
 Menu, FileMenu, Add
 Menu, FileMenu, Add, &Save, FileSave
 Menu, FileMenu, Add, Save &As, FileSaveAs
+Menu, FileMenu, Add
+Menu, FileMenu, Add, &Import, FileImport
+Menu, FileMenu, Add, &Export, FileExport
 Menu, FileMenu, Add
 Menu, FileMenu, Add, E&xit, MainGuiClose
 
@@ -115,13 +119,13 @@ If FileModified
 Viewport := Object("X",-14.5,"Y",-14.5,"W",30,"H",30)
 CurrentFile := "<Untitled>"
 Grid := []
-Gui, Main:Show,, MeseconEdit - %CurrentFile%
-Menu, FileMenu, Disable, &Save
-FileModified := False
+
+SetModified(False)
+
 ResizeWindow(Width,Height)
 Return
 
-FileOpen: ;wip: load viewport
+FileOpen:
 If FileModified
 {
     MsgBox, 35, Confirm, Save current schematic?
@@ -130,6 +134,7 @@ If FileModified
     IfMsgBox, Yes
         Gosub, FileSave
 }
+
 FileSelectFile, FileName, 35,, Open mesecon schematic, Mesecon Schematic (*.mesecon)
 If ErrorLevel
     Return
@@ -140,28 +145,53 @@ If ErrorLevel
     MsgBox, 16, Error, Could not read file "%FileName%".
     Return
 }
-Gui, Main:Show,, MeseconEdit - %CurrentFile%
-Menu, FileMenu, Disable, &Save
-FileModified := False
-Grid := Deserialize(Value)
+
+If RegExMatch(Value,"sS)^" . FileVersion . "\s+(?P<X>-?[\d\.]+)[ \t]+(?P<Y>-?[\d\.]+)[ \t]+(?P<W>-?[\d\.]+)[ \t]+(?P<H>-?[\d\.]+)\s+(?P<Data>.*)$",Field)
+{
+    try Grid := Deserialize(FieldData)
+    catch e
+    {
+        MsgBox, 20, Error, Could not recognize file entries.`n`nLoad anyway?
+        IfMsgBox, Yes
+            Grid := Deserialize(FieldData,True)
+        Else
+            Return
+    }
+
+    ;load viewport position
+    Viewport.X := FieldX
+    Viewport.Y := FieldY
+    Viewport.W := FieldW
+    Viewport.H := FieldH
+}
+Else
+{
+    MsgBox, 20, Error, Could not recognize file version.`n`nLoad anyway?
+    IfMsgBox, Yes
+        Grid := Deserialize(Value,True)
+    Else
+        Return
+}
+
+SetModified(False)
 Return
 
-FileSave: ;wip: save viewport
+FileSave:
 If (CurrentFile = "<Untitled>")
 {
     Gosub, FileSaveAs
     Return
 }
 FileDelete, %CurrentFile%
-FileAppend, % Serialize(Grid), %CurrentFile%
+Value := FileVersion . "`n" . Viewport.X . " " . Viewport.Y . " " . Viewport.W . " " . Viewport.H . "`n" . Serialize(Grid)
+FileAppend, %Value%, %CurrentFile%
 If ErrorLevel
 {
     Gui, Main:+OwnDialogs
     MsgBox, 16, Error, Could not save file as "%CurrentFile%".
 }
-Gui, Main:Show,, MeseconEdit - %CurrentFile%
-Menu, FileMenu, Disable, &Save
-FileModified := False
+
+SetModified(False)
 Return
 
 FileSaveAs:
@@ -171,6 +201,23 @@ If ErrorLevel
 CurrentFile := FileName
 Gui, Main:Show,, MeseconEdit - %CurrentFile%
 Gosub, FileSave
+Return
+
+FileImport:
+;wip
+Return
+
+FileExport:
+FileSelectFile, FileName, S48,, Save worldedit schematic, WorldEdit Schematic (*.we)
+If ErrorLevel
+    Return
+FileDelete, %FileName%
+FileAppend, % Export(Grid), %FileName%
+If ErrorLevel
+{
+    Gui, Main:+OwnDialogs
+    MsgBox, 16, Error, Could not export file as "%FileName%".
+}
 Return
 
 ShowHelp:
@@ -236,7 +283,26 @@ Draw:
 Draw(Grid,Width,Height,Viewport)
 Return
 
+SetModified(Value)
+{
+    global CurrentFile, FileModified
+    If Value
+    {
+        Gui, Main:Show,, * MeseconEdit - %CurrentFile%
+        Menu, FileMenu, Enable, &Save
+        FileModified := True
+    }
+    Else
+    {
+        Gui, Main:Show,, MeseconEdit - %CurrentFile%
+        Menu, FileMenu, Disable, &Save
+        FileModified := False
+    }
+}
+
 ~RButton::
+SetModified(True)
+
 CoordMode, Mouse, Client
 MouseGetPos, OffsetX, OffsetY
 ViewportX1 := Viewport.X, ViewportY1 := Viewport.Y
@@ -298,9 +364,8 @@ For Index, Tool In Tools
         Break
     }
 }
-Gui, Main:Show,, * MeseconEdit - %CurrentFile%
-Menu, FileMenu, Enable, &Save
-FileModified := True
+
+SetModified(True)
 Return
 
 ~PGUP::
@@ -309,6 +374,8 @@ If Viewport.W > 2
 {
     Viewport.X += Viewport.W * 0.1, Viewport.Y += Viewport.H * 0.1
     Viewport.W *= 0.8, Viewport.H *= 0.8
+
+    SetModified(True)
 }
 Return
 
@@ -318,6 +385,8 @@ If Viewport.W < 80
 {
     Viewport.X -= Viewport.W * 0.1, Viewport.Y -= Viewport.H * 0.1
     Viewport.W *= 1.2, Viewport.H *= 1.2
+
+    SetModified(True)
 }
 Return
 
@@ -332,10 +401,9 @@ Serialize(Grid)
     Return, SubStr(Result,1,-1)
 }
 
-Deserialize(Value)
+Deserialize(Value,Lenient = False)
 {
-    global
-    local NodeClasses, Grid, Position, IndexX, IndexY, NodeName, Data, NodeClass
+    global Nodes
 
     ;create a mapping of node class names to node classes
     NodeClasses := Object()
@@ -351,25 +419,40 @@ Deserialize(Value)
     Loop, Parse, Value, `n
     {
         ;wip: serialized data cannot contain newlines
-        Data := A_LoopField
+        If !RegExMatch(A_LoopField,"sS)^(?P<X>-?[\d\.]+)[ \t]+(?P<Y>-?[\d\.]+)[ \t]+(?P<Type>[^ \t]+)[ \t]+(?P<Data>.*)$",Field)
+        {
+            If Lenient
+                Continue
+            throw Exception("Invalid node entry: " . A_LoopField . ".")
+        }
+        If !(Lenient || NodeClasses.HasKey(FieldType))
+            throw Exception("Invalid node class: " . FieldType . ".")
 
-        Position := InStr(Data,"`t")
-        IndexX := SubStr(Data,1,Position - 1)
-        Data := SubStr(Data,Position + 1)
-
-        Position := InStr(Data,"`t")
-        IndexY := SubStr(Data,1,Position - 1)
-        Data := SubStr(Data,Position + 1)
-
-        Position := InStr(Data,"`t")
-        NodeName := SubStr(Data,1,Position - 1)
-        Data := SubStr(Data,Position + 1)
-
-        If !NodeClasses.HasKey(NodeName)
-            throw Exception("Unknown node class: " . NodeName . ".")
-        Grid[IndexX,IndexY] := NodeClasses[NodeName].Deserialize(IndexX,IndexY,Data)
+        Grid[FieldX,FieldY] := NodeClasses[FieldType].Deserialize(FieldX,FieldY,FieldData)
     }
     Return, Grid
+}
+
+Export(Grid)
+{
+    static NodeMap := Object("Nodes.BlinkyPlant",["mesecons_blinkyplant:blinky_plant_on"  ,"mesecons_blinkyplant:blinky_plant_off"]
+                            ,"Nodes.Inverter",   ["mesecons_temperest:mesecon_inverter_on","mesecons_temperest:mesecon_inverter_off"]
+                            ,"Nodes.Mesecon",    ["mesecons:mesecon_on"                   ,"mesecons:mesecon_off"]
+                            ,"Nodes.Meselamp",   ["mesecons_lamp:lamp_on"                 ,"mesecons_lamp:lamp_off"]
+                            ,"Nodes.Plug",       ["mesecons_temperest:mesecon_plug"       ,"mesecons_temperest:mesecon_plug"]
+                            ,"Nodes.PowerPlant", ["mesecons_powerplant:power_plant"       ,"mesecons_powerplant:power_plant"]
+                            ,"Nodes.Socket",     ["mesecons_temperest:mesecon_socket_on"  ,"mesecons_temperest:mesecon_socket_on"]
+                            ,"Nodes.Solid",      ["default:dirt"                          ,"default:dirt"])
+    Result := ""
+    For IndexX, Column In Grid
+    {
+        For IndexY, Node In Column
+        {
+            NodeName := NodeMap[Node.__Class][Node.State ? 1 : 2]
+            Result .= "{`n`t{" . IndexX . "," . IndexY . ",0},`n`t{name=""" . NodeName . """}`n},`n"
+        }
+    }
+    Return, Result
 }
 
 GetMouseCoordinates(Width,Height,ByRef MouseX,ByRef MouseY)
