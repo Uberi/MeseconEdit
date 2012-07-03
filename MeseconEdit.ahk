@@ -234,7 +234,7 @@ Gui, About:+OwnerMain +ToolWindow
 Gui, About:Font, s48, Arial
 Gui, About:Add, Text, x10 y10 w400 h70, MeseconEdit
 Gui, About:Font, s8 Bold
-Gui, About:Add, Text, x10 y80 w200 h20, v1.0 Stable
+Gui, About:Add, Text, x10 y80 w200 h20, v1.5 Stable
 Gui, About:Font, Norm
 Gui, About:Add, Text, x210 y80 w200 h20 Right, Copyright Anthony Zhang 2012
 Gui, About:Font, s12
