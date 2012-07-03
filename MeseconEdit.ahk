@@ -398,8 +398,19 @@ Serialize(Grid)
     Result := ""
     For IndexX, Column In Grid
     {
+        Value := Node.Serialize()
+
+        ;escape data
+        Value := "test`nabc 123@$435" . Chr(1)
+        StringReplace, Value, Value, \, \5C, All
+        FormatInteger := A_FormatInteger, FoundPos := 0
+        SetFormat, IntegerFast, Hex
+        While, FoundPos := RegExMatch(Value,"S)[^\w \t``\-=\[\]\\;',\./~!@#\$%\^&\*\(\)_\+\{\}|:""<>\?]",Char,FoundPos + 1)
+            StringReplace, Value, Value, %Char%, % "\" . SubStr("0" . SubStr(Asc(Char),3),-1), All
+        SetFormat, IntegerFast, %FormatInteger%
+
         For IndexY, Node In Column
-            Result .= IndexX . "`t" . IndexY . "`t" . Node.__Class . "`t" . Node.Serialize() . "`n"
+            Result .= IndexX . "`t" . IndexY . "`t" . Node.__Class . "`t" . Value . "`n"
     }
     Return, SubStr(Result,1,-1)
 }
@@ -421,7 +432,6 @@ Deserialize(Value,Lenient = False)
     Value := Trim(Value,"`n")
     Loop, Parse, Value, `n
     {
-        ;wip: serialized data cannot contain newlines
         If !RegExMatch(A_LoopField,"sS)^(?P<X>-?[\d\.]+)[ \t]+(?P<Y>-?[\d\.]+)[ \t]+(?P<Type>[^ \t]+)[ \t]+(?P<Data>.*)$",Field)
         {
             If Lenient
@@ -430,6 +440,15 @@ Deserialize(Value,Lenient = False)
         }
         If !(Lenient || NodeClasses.HasKey(FieldType))
             throw Exception("Invalid node class: " . FieldType . ".")
+
+        ;unescape data
+        FoundPos := 0
+        While, FoundPos := InStr(FieldData,"\",False,FoundPos + 1)
+        {
+            If (Temp1 := SubStr(FieldData,FoundPos + 1,2)) != "5C"
+                StringReplace, FieldData, FieldData, \%Temp1%, % Chr("0x" . Temp1), All
+        }
+        StringReplace, FieldData, FieldData, \5C, \, All
 
         Grid[FieldX,FieldY] := NodeClasses[FieldType].Deserialize(FieldX,FieldY,FieldData)
     }

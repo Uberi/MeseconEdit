@@ -90,10 +90,7 @@ class Sign extends Nodes.Basis
 
     Serialize()
     {
-        Value := this.Text
-        StringReplace, Value, Value, `r,, All
-        StringReplace, Value, Value, `n, ``n, All
-        Return, Value
+        Return, this.Text
     }
 
     Deserialize(IndexX,IndexY,Value)
