@@ -3,14 +3,15 @@
 class Draw
 {
     static Subtool := 1
-    static Nodes := Object("Solid",       Nodes.Solid
+    static Nodes := Object("Blinky Plant",Nodes.BlinkyPlant
+                          ,"Inverter",    Nodes.Inverter
                           ,"Mesecon",     Nodes.Mesecon
-                          ,"Blinky Plant",Nodes.BlinkyPlant
-                          ,"Power Plant", Nodes.PowerPlant
                           ,"Meselamp",    Nodes.Meselamp
                           ,"Plug",        Nodes.Plug
+                          ,"Power Plant", Nodes.PowerPlant
+                          ,"Sign",        Nodes.Sign
                           ,"Socket",      Nodes.Socket
-                          ,"Inverter",    Nodes.Inverter)
+                          ,"Solid",       Nodes.Solid)
 
     Select()
     {

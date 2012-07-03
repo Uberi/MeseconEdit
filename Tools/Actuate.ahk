@@ -6,7 +6,7 @@ class Actuate
 
     Select()
     {
-        GuiControl, Main:, Subtools, |Hit|Walk Over
+        GuiControl, Main:, Subtools, |Punch|Walk Over
         GuiControl, Main:Choose, Subtools, % this.SubTool
     }
 
@@ -17,7 +17,7 @@ class Actuate
         Cell := Grid[MouseX,MouseY]
 
         GuiControlGet, Action, Main:, Subtools
-        If (Action = "Hit")
+        If (Action = "Punch")
             Cell.Punch()
         Else If (Action = "Walk Over")
             Cell.WalkOver()
