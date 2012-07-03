@@ -1,5 +1,6 @@
 #NoEnv
 
+;wip: pass hDC to Node.Draw()
 ;wip: multiple simultaneous viewports with independent views
 ;wip: undo/redo
 ;wip: component count in status bar - nodes used in selection, in total, as well as info such as hovered node class and state
@@ -97,14 +98,15 @@ class ToolActions
 class Nodes
 {
     #Include %A_ScriptDir%\Nodes\Basis.ahk
-    #Include %A_ScriptDir%\Nodes\Solid.ahk
-    #Include %A_ScriptDir%\Nodes\Mesecon.ahk
-    #Include %A_ScriptDir%\Nodes\Power Plant.ahk
     #Include %A_ScriptDir%\Nodes\Blinky Plant.ahk
+    #Include %A_ScriptDir%\Nodes\Inverter.ahk
+    #Include %A_ScriptDir%\Nodes\Mesecon.ahk
     #Include %A_ScriptDir%\Nodes\Meselamp.ahk
     #Include %A_ScriptDir%\Nodes\Plug.ahk
+    #Include %A_ScriptDir%\Nodes\Power Plant.ahk
+    #Include %A_ScriptDir%\Nodes\Sign.ahk
     #Include %A_ScriptDir%\Nodes\Socket.ahk
-    #Include %A_ScriptDir%\Nodes\Inverter.ahk
+    #Include %A_ScriptDir%\Nodes\Solid.ahk
 }
 
 FileNew:
