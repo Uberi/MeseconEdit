@@ -37,9 +37,8 @@ class Sign extends Nodes.Basis
         Return
     }
 
-    Draw(X,Y,W,H)
+    Draw(hDC,X,Y,W,H)
     {
-        global hMemoryDC
         static hFont := 0, PreviousH := -1
 
         VarSetCapacity(Rectangle,16)
@@ -49,7 +48,7 @@ class Sign extends Nodes.Basis
         NumPut(Round(Y + (H * 0.2)),Rectangle,4,"Int")
         NumPut(Round(X + (W * 0.9)),Rectangle,8,"Int")
         NumPut(Round(Y + (H * 0.7)),Rectangle,12,"Int")
-        DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",this.base.hBrush)
+        DllCall("FillRect","UPtr",hDC,"UPtr",&Rectangle,"UPtr",this.base.hBrush)
 
         ;set up text properties
         If (H != PreviousH)
@@ -73,20 +72,20 @@ class Sign extends Nodes.Basis
                 ,"Str","Arial" ;typeface name
                 ,"UPtr")
         }
-        DllCall("SetTextColor","UPtr",hMemoryDC,"UInt",0xFFFFFF)
-        DllCall("SetBkMode","UPtr",hMemoryDC,"Int",1) ;TRANSPARENT
-        DllCall("SetTextAlign","UPtr",hMemoryDC,"UInt",6) ;TA_CENTER | TA_TOP: align text to the center and the top
+        DllCall("SetTextColor","UPtr",hDC,"UInt",0xFFFFFF)
+        DllCall("SetBkMode","UPtr",hDC,"Int",1) ;TRANSPARENT
+        DllCall("SetTextAlign","UPtr",hDC,"UInt",6) ;TA_CENTER | TA_TOP: align text to the center and the top
 
         ;draw text
-        hOriginalFont := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hFont,"UPtr")
+        hOriginalFont := DllCall("SelectObject","UPtr",hDC,"UPtr",hFont,"UPtr")
         PositionX := X + (W * 0.5), PositionY := Y + (H * 0.25)
         Text := this.Text
         Loop, Parse, Text, `n
         {
-            DllCall("TextOut","UPtr",hMemoryDC,"Int",Round(PositionX),"Int",Round(PositionY),"Str",A_LoopField,"Int",StrLen(A_LoopField))
+            DllCall("TextOut","UPtr",hDC,"Int",Round(PositionX),"Int",Round(PositionY),"Str",A_LoopField,"Int",StrLen(A_LoopField))
             PositionY += H * 0.2
         }
-        DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalFont,"UPtr")
+        DllCall("SelectObject","UPtr",hDC,"UPtr",hOriginalFont,"UPtr")
     }
 
     Serialize()

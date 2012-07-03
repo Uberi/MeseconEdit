@@ -28,12 +28,10 @@ class Inverter extends Nodes.Power
         base.__New(IndexX,IndexY)
     }
 
-    Draw(X,Y,W,H)
+    Draw(hDC,X,Y,W,H)
     {
-        global hMemoryDC
-
-        hOriginalPen := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",this.base.hPen,"UPtr") ;select the pen
-        hOriginalBrush := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",this.base.hBrush,"UPtr") ;select the brush
+        hOriginalPen := DllCall("SelectObject","UPtr",hDC,"UPtr",this.base.hPen,"UPtr") ;select the pen
+        hOriginalBrush := DllCall("SelectObject","UPtr",hDC,"UPtr",this.base.hBrush,"UPtr") ;select the brush
 
         Vertices := 3
         VarSetCapacity(Points,8 * Vertices)
@@ -42,27 +40,27 @@ class Inverter extends Nodes.Power
         NumPut(Round(X),Points,0,"Int"), NumPut(Round(Y + (H * 0.3)),Points,4,"Int")
         NumPut(Round(X),Points,8,"Int"), NumPut(Round(Y + (H * 0.7)),Points,12,"Int")
         NumPut(Round(X + (W * 0.3)),Points,16,"Int"), NumPut(Round(Y + (H * 0.5)),Points,20,"Int")
-        DllCall("Polygon","UPtr",hMemoryDC,"UPtr",&Points,"Int",Vertices)
+        DllCall("Polygon","UPtr",hDC,"UPtr",&Points,"Int",Vertices)
 
         ;draw right arrow
         NumPut(Round(X + W),Points,0,"Int")
         NumPut(Round(X + W),Points,8,"Int")
         NumPut(Round(X + (W * 0.7)),Points,16,"Int")
-        DllCall("Polygon","UPtr",hMemoryDC,"UPtr",&Points,"Int",Vertices)
+        DllCall("Polygon","UPtr",hDC,"UPtr",&Points,"Int",Vertices)
 
         ;draw top arrow
         NumPut(Round(X + (W * 0.3)),Points,0,"Int"), NumPut(Round(Y),Points,4,"Int")
         NumPut(Round(X + (W * 0.7)),Points,8,"Int"), NumPut(Round(Y),Points,12,"Int")
         NumPut(Round(X + (W * 0.5)),Points,16,"Int"), NumPut(Round(Y + (H * 0.3)),Points,20,"Int")
-        DllCall("Polygon","UPtr",hMemoryDC,"UPtr",&Points,"Int",Vertices)
+        DllCall("Polygon","UPtr",hDC,"UPtr",&Points,"Int",Vertices)
 
         ;draw bottom arrow
         NumPut(Round(Y + H),Points,4,"Int")
         NumPut(Round(Y + H),Points,12,"Int")
         NumPut(Round(Y + (H * 0.7)),Points,20,"Int")
-        DllCall("Polygon","UPtr",hMemoryDC,"UPtr",&Points,"Int",Vertices)
+        DllCall("Polygon","UPtr",hDC,"UPtr",&Points,"Int",Vertices)
 
-        DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalPen,"UPtr") ;deselect the pen
-        DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalBrush,"UPtr") ;deselect the brush
+        DllCall("SelectObject","UPtr",hDC,"UPtr",hOriginalPen,"UPtr") ;deselect the pen
+        DllCall("SelectObject","UPtr",hDC,"UPtr",hOriginalBrush,"UPtr") ;deselect the brush
     }
 }

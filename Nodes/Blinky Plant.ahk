@@ -35,18 +35,17 @@ class BlinkyPlant extends Nodes.Power
         this.base.BlinkyPlantArray.Remove(&this,"")
     }
 
-    Draw(X,Y,W,H)
+    Draw(hDC,X,Y,W,H)
     {
-        global hMemoryDC
         hBrush := this.State ? this.base.hOnBrush : this.base.hOffBrush
 
-        hOriginalPen := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",this.base.hPen,"UPtr") ;select the pen
-        hOriginalBrush := DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hBrush,"UPtr") ;select the brush
+        hOriginalPen := DllCall("SelectObject","UPtr",hDC,"UPtr",this.base.hPen,"UPtr") ;select the pen
+        hOriginalBrush := DllCall("SelectObject","UPtr",hDC,"UPtr",hBrush,"UPtr") ;select the brush
 
         ;draw the power plant
-        DllCall("Ellipse","UPtr",hMemoryDC,"Int",Round(X + (W * 0.1)),"Int",Round(Y + (H * 0.1)),"Int",Round(X + (W * 0.9)),"Int",Round(Y + (H * 0.9)))
+        DllCall("Ellipse","UPtr",hDC,"Int",Round(X + (W * 0.1)),"Int",Round(Y + (H * 0.1)),"Int",Round(X + (W * 0.9)),"Int",Round(Y + (H * 0.9)))
 
-        DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalPen,"UPtr") ;deselect the pen
-        DllCall("SelectObject","UPtr",hMemoryDC,"UPtr",hOriginalBrush,"UPtr") ;deselect the brush
+        DllCall("SelectObject","UPtr",hDC,"UPtr",hOriginalPen,"UPtr") ;deselect the pen
+        DllCall("SelectObject","UPtr",hDC,"UPtr",hOriginalBrush,"UPtr") ;deselect the brush
     }
 }

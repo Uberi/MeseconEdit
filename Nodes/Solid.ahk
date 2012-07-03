@@ -8,10 +8,8 @@ class Solid extends Nodes.Basis
         this.Receive := False
     }
 
-    Draw(X,Y,W,H)
+    Draw(hDC,X,Y,W,H)
     {
-        global hMemoryDC
-
         VarSetCapacity(Rectangle,16)
 
         ;draw rectangle
@@ -19,7 +17,7 @@ class Solid extends Nodes.Basis
         NumPut(Round(Y + (H * 0.1)),Rectangle,4,"Int")
         NumPut(Round(X + (W * 0.9)),Rectangle,8,"Int")
         NumPut(Round(Y + (H * 0.9)),Rectangle,12,"Int")
-        DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",this.base.hBrush)
+        DllCall("FillRect","UPtr",hDC,"UPtr",&Rectangle,"UPtr",this.base.hBrush)
     }
 
     Serialize()

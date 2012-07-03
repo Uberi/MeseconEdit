@@ -141,9 +141,9 @@ class Mesecon extends Nodes.Basis
             Bottom.ModifyState(Amount,OpenList)
     }
 
-    Draw(X,Y,W,H)
+    Draw(hDC,X,Y,W,H)
     {
-        global hMemoryDC, Grid
+        global Grid
 
         ;obtain neighbor nodes
         Left := Grid[this.IndexX - 1,this.IndexY], Left := Left.Send || Left.Receive
@@ -165,19 +165,19 @@ class Mesecon extends Nodes.Basis
                 NumPut(Round(X + W),Rectangle,8,"Int")
             Else
                 NumPut(Round(X + (W * 0.6)),Rectangle,8,"Int")
-            DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
+            DllCall("FillRect","UPtr",hDC,"UPtr",&Rectangle,"UPtr",hBrush)
         }
         Else If Right ;right but not left neighbor
         {
             NumPut(Round(X + (W * 0.4)),Rectangle,0,"Int")
             NumPut(Round(X + W),Rectangle,8,"Int")
-            DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
+            DllCall("FillRect","UPtr",hDC,"UPtr",&Rectangle,"UPtr",hBrush)
         }
         Else If !(Top || Bottom) ;no neighbors
         {
             NumPut(Round(X + (W * 0.4)),Rectangle,0,"Int")
             NumPut(Round(X + (W * 0.6)),Rectangle,8,"Int")
-            DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
+            DllCall("FillRect","UPtr",hDC,"UPtr",&Rectangle,"UPtr",hBrush)
         }
 
         ;draw vertical bar
@@ -190,13 +190,13 @@ class Mesecon extends Nodes.Basis
                 NumPut(Round(Y + H),Rectangle,12,"Int")
             Else
                 NumPut(Round(Y + (H * 0.6)),Rectangle,12,"Int")
-            DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
+            DllCall("FillRect","UPtr",hDC,"UPtr",&Rectangle,"UPtr",hBrush)
         }
         Else If Bottom
         {
             NumPut(Round(Y + (H * 0.4)),Rectangle,12,"Int")
             NumPut(Round(Y + H),Rectangle,12,"Int")
-            DllCall("FillRect","UPtr",hMemoryDC,"UPtr",&Rectangle,"UPtr",hBrush)
+            DllCall("FillRect","UPtr",hDC,"UPtr",&Rectangle,"UPtr",hBrush)
         }
     }
 }

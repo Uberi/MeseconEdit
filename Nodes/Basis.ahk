@@ -10,7 +10,7 @@ class Basis
         
     }
 
-    Draw(X,Y,W,H)
+    Draw(hDC,X,Y,W,H)
     {
         
     }

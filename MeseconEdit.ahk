@@ -1,6 +1,5 @@
 #NoEnv
 
-;wip: pass hDC to Node.Draw()
 ;wip: multiple simultaneous viewports with independent views
 ;wip: undo/redo
 ;wip: component count in status bar - nodes used in selection, in total, as well as info such as hovered node class and state
@@ -110,6 +109,7 @@ class Nodes
 }
 
 FileNew:
+Gui, Main:+OwnDialogs
 If FileModified
 {
     MsgBox, 35, Confirm, Save current schematic?
@@ -128,6 +128,7 @@ ResizeWindow(Width,Height)
 Return
 
 FileOpen:
+Gui, Main:+OwnDialogs
 If FileModified
 {
     MsgBox, 35, Confirm, Save current schematic?
@@ -179,6 +180,7 @@ SetModified(False)
 Return
 
 FileSave:
+Gui, Main:+OwnDialogs
 If (CurrentFile = "<Untitled>")
 {
     Gosub, FileSaveAs
@@ -188,15 +190,13 @@ FileDelete, %CurrentFile%
 Value := FileVersion . "`n" . Viewport.X . " " . Viewport.Y . " " . Viewport.W . " " . Viewport.H . "`n" . Serialize(Grid)
 FileAppend, %Value%, %CurrentFile%
 If ErrorLevel
-{
-    Gui, Main:+OwnDialogs
     MsgBox, 16, Error, Could not save file as "%CurrentFile%".
-}
-
-SetModified(False)
+Else
+    SetModified(False)
 Return
 
 FileSaveAs:
+Gui, Main:+OwnDialogs
 FileSelectFile, FileName, S48,, Save mesecon schematic, Mesecon Schematic (*.mesecon)
 If ErrorLevel
     Return
@@ -206,10 +206,12 @@ Gosub, FileSave
 Return
 
 FileImport:
+Gui, Main:+OwnDialogs
 ;wip
 Return
 
 FileExport:
+Gui, Main:+OwnDialogs
 FileSelectFile, FileName, S48,, Save worldedit schematic, WorldEdit Schematic (*.we)
 If ErrorLevel
     Return
@@ -242,9 +244,8 @@ Return
 
 AboutGuiEscape:
 AboutGuiClose:
-Gui, About:Destroy
 Gui, Main:-Disabled
-Gui, Main:Show
+Gui, About:Destroy
 Return
 
 MainGuiClose:
@@ -282,7 +283,7 @@ CurrentTool.Class.Select()
 Return
 
 Draw:
-Draw(Grid,Width,Height,Viewport)
+Draw(hDC,hMemoryDC,Grid,Width,Height,Viewport)
 Return
 
 SetModified(Value)
@@ -499,9 +500,8 @@ UninitializeViewport(hWindow)
         throw Exception("Could not release window device context.")
 }
 
-Draw(Grid,Width,Height,Viewport)
+Draw(hDC,hMemoryDC,Grid,Width,Height,Viewport)
 {
-    global hDC, hMemoryDC
     static hPen := DllCall("CreatePen","Int",0,"Int",0,"UInt",0x888888,"UPtr") ;PS_SOLID
 
     ;clear the bitmap
@@ -547,7 +547,7 @@ Draw(Grid,Width,Height,Viewport)
         Loop, % Ceil(Viewport.H) + 1
         {
             If Grid[IndexX,IndexY1]
-                Grid[IndexX,IndexY1].Draw(BlockX,BlockY1,BlockW,BlockH)
+                Grid[IndexX,IndexY1].Draw(hMemoryDC,BlockX,BlockY1,BlockW,BlockH)
             IndexY1 ++, BlockY1 += BlockH
         }
         IndexX ++, BlockX += BlockW
