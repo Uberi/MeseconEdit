@@ -95,7 +95,7 @@ class Sign extends Nodes.Basis
 
     Deserialize(IndexX,IndexY,Value)
     {
-        Result := new this(IndexX,IndexY)
+        Result := new this.base(IndexX,IndexY)
         StringReplace, Value, Value, ``n, `n, All
         Result.Text := Value
         Return, Result

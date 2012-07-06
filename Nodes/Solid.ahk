@@ -27,6 +27,6 @@ class Solid extends Nodes.Basis
 
     Deserialize(IndexX,IndexY,Value)
     {
-        Return, new this(IndexX,IndexY)
+        Return, new this.base(IndexX,IndexY)
     }
 }

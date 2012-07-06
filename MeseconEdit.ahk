@@ -106,6 +106,7 @@ class Nodes
     #Include %A_ScriptDir%\Nodes\Sign.ahk
     #Include %A_ScriptDir%\Nodes\Socket.ahk
     #Include %A_ScriptDir%\Nodes\Solid.ahk
+    #Include %A_ScriptDir%\Nodes\Switch.ahk
 }
 
 FileNew:

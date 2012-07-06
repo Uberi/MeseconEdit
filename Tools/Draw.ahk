@@ -11,7 +11,8 @@ class Draw
                           ,"Power Plant", Nodes.PowerPlant
                           ,"Sign",        Nodes.Sign
                           ,"Socket",      Nodes.Socket
-                          ,"Solid",       Nodes.Solid)
+                          ,"Solid",       Nodes.Solid
+                          ,"Switch",       Nodes.Switch)
 
     Select()
     {
