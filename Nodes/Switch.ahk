@@ -8,7 +8,7 @@ class Switch extends Nodes.Power
 
     __New(IndexX,IndexY)
     {
-        this.State := 1
+        this.State := 0
         base.__New(IndexX,IndexY)
     }
 
