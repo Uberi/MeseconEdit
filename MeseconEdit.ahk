@@ -1,5 +1,6 @@
 #NoEnv
 
+;wip: import/export signs
 ;wip: multiple simultaneous viewports with independent views
 ;wip: undo/redo
 ;wip: component count in status bar - nodes used in selection, in total, as well as info such as hovered node class and state
@@ -69,6 +70,7 @@ For Index, Tool In Tools
 GuiControl, Main:, Tool1, 1
 
 Gui, Main:Add, ListBox, w80 h200 vSubtools
+GuiControl, Main:Focus, Subtools
 SelectTool(1)
 
 Gui, Main:+Resize +MinSize400x320 +LastFound
@@ -205,7 +207,25 @@ Return
 
 FileImport:
 Gui, Main:+OwnDialogs
-;wip
+If FileModified
+{
+    MsgBox, 35, Confirm, Save current schematic?
+    IfMsgBox, Cancel
+        Return
+    IfMsgBox, Yes
+        Gosub, FileSave
+}
+
+FileSelectFile, FileName, 35,, Load worldedit schematic, WorldEdit Schematic (*.we)
+If ErrorLevel
+    Return
+FileRead, Value, %CurrentFile%
+If ErrorLevel
+{
+    MsgBox, 16, Error, Could not read file "%FileName%".
+    Return
+}
+Grid := Import(Value)
 Return
 
 FileExport:
@@ -393,8 +413,8 @@ Return
 ~WheelUp::
 If Viewport.W > 2
 {
-    Viewport.X += Viewport.W * 0.1, Viewport.Y += Viewport.H * 0.1
     Viewport.W *= 0.8, Viewport.H *= 0.8
+    Viewport.X += Viewport.W * 0.1, Viewport.Y += Viewport.H * 0.1
 
     SetModified(True)
 }
@@ -405,7 +425,7 @@ Return
 If Viewport.W < 80
 {
     Viewport.X -= Viewport.W * 0.1, Viewport.Y -= Viewport.H * 0.1
-    Viewport.W *= 1.2, Viewport.H *= 1.2
+    Viewport.W *= 1.25, Viewport.H *= 1.25
 
     SetModified(True)
 }
@@ -416,19 +436,20 @@ Serialize(Grid)
     Result := ""
     For IndexX, Column In Grid
     {
-        Value := Node.Serialize()
-
-        ;escape data
-        Value := "test`nabc 123@$435" . Chr(1)
-        StringReplace, Value, Value, \, \5C, All
-        FormatInteger := A_FormatInteger, FoundPos := 0
-        SetFormat, IntegerFast, Hex
-        While, FoundPos := RegExMatch(Value,"S)[^\w \t``\-=\[\]\\;',\./~!@#\$%\^&\*\(\)_\+\{\}|:""<>\?]",Char,FoundPos + 1)
-            StringReplace, Value, Value, %Char%, % "\" . SubStr("0" . SubStr(Asc(Char),3),-1), All
-        SetFormat, IntegerFast, %FormatInteger%
-
         For IndexY, Node In Column
+        {
+            Value := Node.Serialize()
+
+            ;escape data
+            StringReplace, Value, Value, \, \5C, All
+            FormatInteger := A_FormatInteger, FoundPos := 0
+            SetFormat, IntegerFast, Hex
+            While, FoundPos := RegExMatch(Value,"S)[^\w \t``\-=\[\]\\;',\./~!@#\$%\^&\*\(\)_\+\{\}|:""<>\?]",Char,FoundPos + 1)
+                StringReplace, Value, Value, %Char%, % "\" . SubStr("0" . SubStr(Asc(Char),3),-1), All
+            SetFormat, IntegerFast, %FormatInteger%
+
             Result .= IndexX . "`t" . IndexY . "`t" . Node.__Class . "`t" . Value . "`n"
+        }
     }
     Return, SubStr(Result,1,-1)
 }
@@ -473,6 +494,104 @@ Deserialize(Value,Lenient = False)
     Return, Grid
 }
 
+Import(Data)
+{
+    global Nodes
+    static NodeMap := Object("default:dirt",Nodes.Solid
+                            ,"mesecons:mesecon_off",Nodes.Mesecon
+                            ,"mesecons:mesecon_on",Nodes.Mesecon
+                            ,"mesecons_blinkyplant:blinky_plant_off",Nodes.BlinkyPlant
+                            ,"mesecons_blinkyplant:blinky_plant_on",Nodes.BlinkyPlant
+                            ,"mesecons_lamp:lamp_off",Nodes.Meselamp
+                            ,"mesecons_lamp:lamp_on",Nodes.Meselamp
+                            ,"mesecons_powerplant:power_plant",Nodes.PowerPlant
+                            ,"mesecons_temperest:mesecon_inverter_off",Nodes.Inverter
+                            ,"mesecons_temperest:mesecon_inverter_on",Nodes.Inverter
+                            ,"mesecons_temperest:mesecon_plug",Nodes.Plug
+                            ,"mesecons_temperest:mesecon_socket_off",Nodes.Socket
+                            ,"mesecons_temperest:mesecon_socket_on",Nodes.Socket
+                            ,"mesecons_switch:mesecon_switch_off",Nodes.Switch
+                            ,"mesecons_switch:mesecon_switch_on",Nodes.Switch)
+
+    Data := SubStr(Data,InStr(Data,"{")) ;remove everything before the table
+    Data := RegExReplace(Data,"sS)--\[\[.*?\]\]") ;remove multiline comments
+    Data := RegExReplace(Data,"sS)--[^\r\n]*[\r\n]") ;remove single line comments
+
+    Entries := LoadTable(Data)
+    For Index, Entry In Entries
+    {
+        For Key, Value In Entry
+        {
+            If IsObject(Value)
+                Entry[Key] := Entries[Value[1]]
+        }
+    }
+
+    Grid := []
+    For Index, Entry In Entries[1]
+    {
+        IndexX := Entry[1]["x"], IndexY := Entry[1]["y"], NodeName := Entry[2]["name"]
+        If Entry[1]["z"] != 0 ;wip: handle depth
+            Continue
+        If NodeMap.HasKey(NodeName)
+        {
+            Node := NodeMap[NodeName]
+            Grid[IndexX,IndexY] := new Node(IndexX,IndexY)
+        }
+    }
+    Return, Grid
+}
+
+LoadTable(Data)
+{
+    Position := 1
+    Result := Object()
+    Stack := [Object("Value",Result,"Index",1)], Key := 1
+    Loop
+    {
+        Entry := Stack[Stack.MaxIndex()]
+        Value := Entry.Value
+        CurrentChar := SubStr(Data,Position,1), Position ++
+        If (CurrentChar = "")
+            Break
+        If (CurrentChar = " " || CurrentChar = "`t" || CurrentChar = "`r" || CurrentChar = "`n")
+            Continue
+
+        If (CurrentChar = "{") ;subtable begin
+        {
+            Value[Entry.Index] := Object()
+            Stack.Insert(Object("Value",Value[Entry.Index],"Index",1)), Key := 1
+        }
+        Else If (CurrentChar = "}") ;subtable end
+            Key := Stack.Remove().Index
+        Else If (CurrentChar = ",") ;element delimiter
+            Entry.Index ++, Key := Entry.Index
+        Else If (CurrentChar = "[") ;named key begin
+        {
+            If RegExMatch(Data,"AS)""([^""]*)""\s*\]\s*=",Output,Position)
+                Key := Output1, Position += StrLen(Output)
+            Else If RegExMatch(Data,"AS)(\d+)\s*\]\s*=",Output,Position)
+                Key := Output1, Position += StrLen(Output)
+            Else
+                Return, Result[1]
+        }
+        Else If (CurrentChar = """") ;string
+        {
+            If !RegExMatch(Data,"AS)""([^""]*)""",Output,Position - 1)
+                Return, Result[1]
+            Position += StrLen(Output) - 1
+            Value[Key] := Output1
+        }
+        Else If InStr("1234567890",CurrentChar) ;number
+        {
+            RegExMatch(Data,"AS)\d+",Output,Position - 1)
+            Position += StrLen(Output) - 1
+            Value[Key] := Output
+        }
+    }
+    Return, Result[1]
+}
+
 Export(Grid)
 {
     static NodeMap := Object("Nodes.BlinkyPlant",["mesecons_blinkyplant:blinky_plant_on"  ,"mesecons_blinkyplant:blinky_plant_off"]
@@ -481,18 +600,34 @@ Export(Grid)
                             ,"Nodes.Meselamp",   ["mesecons_lamp:lamp_on"                 ,"mesecons_lamp:lamp_off"]
                             ,"Nodes.Plug",       ["mesecons_temperest:mesecon_plug"       ,"mesecons_temperest:mesecon_plug"]
                             ,"Nodes.PowerPlant", ["mesecons_powerplant:power_plant"       ,"mesecons_powerplant:power_plant"]
-                            ,"Nodes.Socket",     ["mesecons_temperest:mesecon_socket_on"  ,"mesecons_temperest:mesecon_socket_on"]
+                            ,"Nodes.Socket",     ["mesecons_temperest:mesecon_socket_on"  ,"mesecons_temperest:mesecon_socket_off"]
+                            ,"Nodes.Switch",     ["mesecons_switch:mesecon_switch_on"     ,"mesecons_switch:mesecon_switch_off"]
                             ,"Nodes.Solid",      ["default:dirt"                          ,"default:dirt"])
-    Result := ""
+    static Padding := "   "
+
+    NodeIndex := 0
+    For IndexX, Column In Grid
+    {
+        For IndexY, Node In Column
+            NodeIndex ++
+    }
+
+    MainIndex := 1
+    MainList := "{`n", NodeList := "", DataList := ""
     For IndexX, Column In Grid
     {
         For IndexY, Node In Column
         {
             NodeName := NodeMap[Node.__Class][Node.State ? 1 : 2]
-            Result .= "{`n`t{" . IndexX . "," . IndexY . ",0},`n`t{name=""" . NodeName . """}`n},`n"
+
+            MainIndex ++, MainList .= "   {" . MainIndex . "},`n"
+            NodeIndex += 2, NodeList .= "{`n   {" . NodeIndex . "},`n   {" . (NodeIndex + 1) . "},`n},`n"
+            DataList .= "{`n   [""y""]=0,`n   [""x""]=" . IndexX . ",`n   [""z""]=" . IndexY . ",`n},`n"
+                . "{`n   [""name""]=""" . NodeName . """,`n},`n"
         }
     }
-    Return, Result
+    MainList .= "},`n"
+    Return, "return {`n" . MainList . NodeList . DataList . "}"
 }
 
 GetMouseCoordinates(Width,Height,ByRef MouseX,ByRef MouseY)
