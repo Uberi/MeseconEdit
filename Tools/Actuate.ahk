@@ -2,12 +2,9 @@
 
 class Actuate
 {
-    static Subtool := 1
-
     Select()
     {
-        GuiControl, Main:, Subtools, |Punch|Walk Over
-        GuiControl, Main:Choose, Subtools, % this.SubTool
+        Return, ["Punch","Walk Over"]
     }
 
     Activate(Grid)

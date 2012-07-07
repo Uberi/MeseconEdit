@@ -2,12 +2,9 @@
 
 class Select
 {
-    static Subtool := 1
-
     Select()
     {
-        GuiControl, Main:, Subtools, |Area|Extend|Connected
-        GuiControl, Main:Choose, Subtools, % this.SubTool
+        Return, ["Area","Extend","Connected"]
     }
 
     Activate(Grid) ;wip

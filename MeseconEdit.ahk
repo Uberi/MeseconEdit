@@ -34,11 +34,10 @@ FileVersion := "Mesecon Schematic Version 1"
 
 FileModified := False
 
-Tools := []
-Tools.Insert(Object("Name","&Draw",   "Class",ToolActions.Draw))
-Tools.Insert(Object("Name","&Remove", "Class",ToolActions.Remove))
-Tools.Insert(Object("Name","&Select", "Class",ToolActions.Select))
-Tools.Insert(Object("Name","&Actuate","Class",ToolActions.Actuate))
+Tools := [Object("Name","&Draw",   "Class",ToolActions.Draw)
+         ,Object("Name","&Remove", "Class",ToolActions.Remove)
+         ,Object("Name","&Select", "Class",ToolActions.Select)
+         ,Object("Name","&Actuate","Class",ToolActions.Actuate)]
 
 Menu, FileMenu, Add, &New, FileNew
 Menu, FileMenu, Add, &Open, FileOpen
@@ -70,15 +69,13 @@ For Index, Tool In Tools
 GuiControl, Main:, Tool1, 1
 
 Gui, Main:Add, ListBox, w80 h200 vSubtools
+SelectTool(1)
 
 Gui, Main:+Resize +MinSize400x320 +LastFound
 GroupAdd, Main, % "ahk_id " . WinExist()
 Gui, Main:Show, w800 h600 Hide
 
 Gosub, FileNew
-
-CurrentTool := Tools[1]
-CurrentTool.Class.Select()
 
 Gosub, Draw
 SetTimer, Draw, 50
@@ -273,19 +270,39 @@ Sleep, 10
 Return
 
 SelectTool:
-;store the index of the previously selected subtool
-Gui, Main:+LastFound
-SendMessage, 0x188, 0, 0, ListBox1 ;LB_GETCURSEL
-CurrentTool.Class.Subtool := ErrorLevel + 1
-
-;select the current tool
-CurrentTool := Tools[SubStr(A_GuiControl,5)]
-CurrentTool.Class.Select()
+SelectTool(SubStr(A_GuiControl,5))
 Return
 
 Draw:
 Draw(hDC,hMemoryDC,Grid,Width,Height,Viewport)
 Return
+
+SelectTool(ToolIndex)
+{
+    global Tools
+    static PreviousToolIndex := 0
+    static Subtools := []
+
+    If PreviousToolIndex > 0
+    {
+        ;store the current subtool of the previously selected tool
+        Gui, Main:+LastFound
+        SendMessage, 0x188, 0, 0, ListBox1 ;LB_GETCURSEL
+        Subtools[PreviousToolIndex] := ErrorLevel + 1
+    }
+    PreviousToolIndex := ToolIndex
+
+    ;select the tool
+    Result := ""
+    For Index, ToolName In Tools[ToolIndex].Class.Select()
+        Result .= "|" . ToolName
+    GuiControl, Main:, Subtools, %Result%
+
+    ;restore the previously selected subtool
+    If !Subtools.HasKey(ToolIndex)
+        Subtools[ToolIndex] := 1
+    GuiControl, Main:Choose, Subtools, % Subtools[ToolIndex]
+}
 
 SetModified(Value)
 {

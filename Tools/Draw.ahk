@@ -2,7 +2,6 @@
 
 class Draw
 {
-    static Subtool := 1
     static Nodes := Object("Blinky Plant",Nodes.BlinkyPlant
                           ,"Inverter",    Nodes.Inverter
                           ,"Mesecon",     Nodes.Mesecon
@@ -16,11 +15,10 @@ class Draw
 
     Select()
     {
-        Subtools := ""
+        SubTools := []
         For ToolName In this.Nodes
-            SubTools .= "|" . ToolName
-        GuiControl, Main:, Subtools, %SubTools%
-        GuiControl, Main:Choose, Subtools, % this.SubTool
+            SubTools.Insert(ToolName)
+        Return, SubTools
     }
 
     Activate(Grid)

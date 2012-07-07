@@ -2,12 +2,9 @@
 
 class Remove
 {
-    static Subtool := 1
-
     Select()
     {
-        GuiControl, Main:, Subtools, |Selection|Connected
-        GuiControl, Main:Choose, Subtools, % this.Subtool
+        Return, ["Selection","Connected"]
     }
 
     Activate(Grid)
