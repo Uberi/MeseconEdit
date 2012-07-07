@@ -22,7 +22,7 @@ class Basis
 
     Deserialize(IndexX,IndexY,Value)
     {
-        Result := new this.base(IndexX,IndexY)
+        Result := new this(IndexX,IndexY)
         Result.State := Value
         Return, Result
     }

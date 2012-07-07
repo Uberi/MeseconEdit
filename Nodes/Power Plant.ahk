@@ -30,6 +30,6 @@ class PowerPlant extends Nodes.Power
 
     Deserialize(IndexX,IndexY,Value)
     {
-        Return, new this.base(IndexX,IndexY)
+        Return, new this(IndexX,IndexY)
     }
 }
