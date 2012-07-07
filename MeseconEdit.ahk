@@ -249,15 +249,17 @@ Return
 ShowAbout:
 Gui, Main:+Disabled
 Gui, About:+OwnerMain +ToolWindow
+Gui, About:Color, White
+Gui, About:Add, Picture, x10 y10 w140 h140, % A_IsCompiled ? A_ScriptFullPath : (A_ScriptDir . "\Icon.ico")
 Gui, About:Font, s48, Arial
-Gui, About:Add, Text, x10 y10 w400 h70, MeseconEdit
+Gui, About:Add, Text, x170 y10 w400 h70, MeseconEdit
 Gui, About:Font, s8 Bold
-Gui, About:Add, Text, x10 y80 w200 h20, v1.5 Stable
-Gui, About:Font, Norm
-Gui, About:Add, Text, x210 y80 w200 h20 Right, Copyright Anthony Zhang 2012
-Gui, About:Font, s12
-Gui, About:Add, Link, x10 y110 w400 h20, Licensed under the <a href="http://www.gnu.org/licenses/">GNU Affero General Public License</a>.
-Gui, About:Show, w420 h140
+Gui, About:Add, Text, x170 y80 w200 h20, v1.6 Stable
+Gui, About:Font, s12 Norm
+Gui, About:Add, Link, x170 y110 w400 h20, Licensed under the <a href="http://www.gnu.org/licenses/">GNU Affero General Public License</a>.
+Gui, About:Font, s8
+Gui, About:Add, Text, x170 y130 w200 h20, Copyright Anthony Zhang 2012.
+Gui, About:Show, w570 h160, About
 Return
 
 AboutGuiEscape:

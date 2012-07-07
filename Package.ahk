@@ -1,4 +1,4 @@
-Archive := A_ScriptDir . "\MeseconEdit v1.5 Stable.zip"
+Archive := A_ScriptDir . "\MeseconEdit v1.6 Stable.zip"
 Compiler := A_ProgramFiles . "\AutoHotkey\Compiler\Ahk2Exe.exe"
 
 FileDelete, %Archive%
