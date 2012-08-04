@@ -2,7 +2,6 @@
 
 ;wip: multiple simultaneous viewports with independent views
 ;wip: undo/redo
-;wip: component count in status bar - nodes used in selection, in total, as well as info such as hovered node class and state
 ;wip: selection filling/moving/copying/pasting
 
 /*
@@ -253,7 +252,7 @@ Gui, About:Add, Picture, x10 y10 w140 h140, % A_IsCompiled ? A_ScriptFullPath : 
 Gui, About:Font, s48, Arial
 Gui, About:Add, Text, x170 y10 w400 h70, MeseconEdit
 Gui, About:Font, s8 Bold
-Gui, About:Add, Text, x170 y80 w200 h20, v1.6 Stable
+Gui, About:Add, Text, x170 y80 w200 h20, v1.7 Stable
 Gui, About:Font, s12 Norm
 Gui, About:Add, Link, x170 y110 w400 h20, Licensed under the <a href="http://www.gnu.org/licenses/">GNU Affero General Public License</a>.
 Gui, About:Font, s8
@@ -380,19 +379,6 @@ While, GetKeyState("RButton","P")
     }
 
     Sleep, 50
-}
-Return
-
-Space::
-While, GetKeyState("Space","P")
-{
-    GetMouseCoordinates(Width,Height,MouseX,MouseY)
-    Node := Grid[MouseX][MouseY]
-    If Node
-        ToolTip % "Type: " . Node.__Class . "`nState: " . Node.State
-    Else
-        ToolTip
-    Sleep, 100
 }
 Return
 
